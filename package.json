@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js"
   },
-  "author": "",
+  "author": "Sanjay Gupta",
   "license": "ISC",
   "devDependencies": {
     "nodemon": "^3.0.1",
