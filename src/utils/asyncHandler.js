@@ -1,6 +1,6 @@
 const asyncHandler  = (requestHandler)=>{
 
-        (req,res,next) => {
+       return (req,res,next) => {
                 Promise.resolve(requestHandler(req,res,next))
                 .catch(err => next(err))
 
@@ -8,8 +8,9 @@ const asyncHandler  = (requestHandler)=>{
 
 export {asyncHandler}
 
+// second methd to handle async request and response
 
-// const asyncHandler2 = (fn)=> async(req,res,nest)=>{
+// const asyncHandler = (fn)=> async(req,res,nest)=>{
 //  try {
 //        await fu(req,res,nest)
         
