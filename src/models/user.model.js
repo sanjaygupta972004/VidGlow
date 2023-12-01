@@ -27,17 +27,17 @@ const userSchema = new Schema(
                         trim: true,
                         index: true,
                 },
-                avatar:{
-                        type : String,  // cloudinary url
-                        required : true,
-                },
-                coverImage:{
-                        type : String,
-                },
-                // watchHistory:{
-                //         type:Schema.type.ObjectId,
-                //         ref:"Video"
-               // },
+                // avatar:{
+                //         type : String,  // cloudinary url
+                //         required : true,
+                // },
+                // coverImage:{
+                //         type : String,
+                // },
+                watchHistory:{
+                        type:Schema.Types.ObjectId,
+                        ref:"Video"
+               },
                 password:{
                         type : String,
                         required : [true, "password is required"]

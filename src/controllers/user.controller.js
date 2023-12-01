@@ -23,7 +23,7 @@ const registerUser =  asyncHandler(async(req,res)=>{
         const {email, username, fullName, password} = req.body
 
 
-// first method to check empty fild validation
+    // basic method to check empty fild validation
 
         // if(email===""){
         //        throw new ApiError(400, "Invalid email")
@@ -34,8 +34,7 @@ const registerUser =  asyncHandler(async(req,res)=>{
                 throw new ApiError(400, "all fields are required")
         }
 
-       // console.log(req.body)
-
+        
        const existedUser =  await User.findOne({
                 $or:[{email}, {username}]
         })
@@ -44,13 +43,19 @@ const registerUser =  asyncHandler(async(req,res)=>{
                 throw new ApiError(409,"User already exists")
         }
 
-
-     
-        console.log(req.files.coverImage[0])
+        console.log(req.files)
 
 
-       const avatarLocalPath = req.files?.avatar[0]?.path;
-       const coverImageLocalPath = req.files?.coverImage[0]?.path;
+     const avatarLocalPath = req.files?.avatar[0]?.path;
+
+     console.log(avatarLocalPath)
+   
+
+    let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
+    
 
        if(!avatarLocalPath){
         throw new ApiError(409,"avatar is required")
@@ -80,13 +85,9 @@ const registerUser =  asyncHandler(async(req,res)=>{
        throw new ApiError(503,"something went wrong while creating a new user")
      }
         
-
      return res.status(201).json(
         new ApiResponse(200,createdUser,"user registered successfully")
      )
-
-
-
 
 })
 
