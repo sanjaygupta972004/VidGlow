@@ -13,6 +13,8 @@ const userSchema = new Schema(
                         lowercase : true,
                         trim: true,
                         index: true,
+              
+                
                 },
                 email:{
                         type : String,
@@ -27,17 +29,19 @@ const userSchema = new Schema(
                         trim: true,
                         index: true,
                 },
-                // avatar:{
-                //         type : String,  // cloudinary url
-                //         required : true,
-                // },
-                // coverImage:{
-                //         type : String,
-                // },
-                watchHistory:{
-                        type:Schema.Types.ObjectId,
-                        ref:"Video"
-               },
+                avatar:{
+                        type : String,  // cloudinary url
+                        required : true,
+                },
+                coverImage:{
+                        type : String,
+                },
+                watchHistory: [
+                        {
+                            type: Schema.Types.ObjectId,
+                            ref: "Video"
+                        }
+                    ],
                 password:{
                         type : String,
                         required : [true, "password is required"]
@@ -45,8 +49,6 @@ const userSchema = new Schema(
                 refreshToken:{
                         type: String,
                 }
-
-
         },
         {timestamps: true}
         );

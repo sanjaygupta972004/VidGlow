@@ -22,6 +22,7 @@ const registerUser =  asyncHandler(async(req,res)=>{
        
         const {email, username, fullName, password} = req.body
 
+    //   console.log(req.body)
 
     // basic method to check empty fild validation
 
@@ -48,7 +49,7 @@ const registerUser =  asyncHandler(async(req,res)=>{
 
      const avatarLocalPath = req.files?.avatar[0]?.path;
 
-     console.log(avatarLocalPath)
+    // console.log(avatarLocalPath)
    
 
     let coverImageLocalPath;
@@ -58,7 +59,7 @@ const registerUser =  asyncHandler(async(req,res)=>{
     
 
        if(!avatarLocalPath){
-        throw new ApiError(409,"avatar is required")
+        throw new ApiError(409,"Avatar is required")
        }
 
       const avatar = await upLoadOnCloudinary(avatarLocalPath)
