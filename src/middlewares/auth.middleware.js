@@ -1,17 +1,25 @@
-import { User } from "../models/user.model";
-import { asyncHandler } from "../utils/asyncHandler";
-import { ApiError } from "../utils/ApiError";
+import { User } from "../models/user.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
 import jwt from "jsonwebtoken";
 
 export const jwtVerify  = asyncHandler(async(req,_,next)=>{
+  try { 
+    //console.log(req.header("Authorization"));
+    //console.log(req.cookies);
 
-  try {
-   const token = req.cookeis?.accessToken || req.headers("Authorization")?.replace("Bearer","");
-   if(!token){
-       throw new ApiError(401, "unauthorized")
-   };
+    let token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+
+     //console.log(token);
+   
+     if(!token){
+  
+       throw new ApiError(401, "unauthorized access")
+     };
 
    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+   // console.log(decoded);
 
    const user = await User.findById(decoded._id).select("-password -refreshToken");
 
@@ -21,12 +29,9 @@ export const jwtVerify  = asyncHandler(async(req,_,next)=>{
 
    req.user = user;
 
-   next();
+   next();} catch (error) {
+    new ApiError (401, "unauthorized user access")
+   }
    
-  } catch (error) {
-     res.status(error.statusCode || 500).json({
-       success:false,
-       message:error.message || "internal server error"
-   })
-  }
+  
 })
