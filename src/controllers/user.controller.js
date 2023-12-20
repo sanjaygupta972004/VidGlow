@@ -233,7 +233,7 @@ const refreshToken = asyncHandler(async(req,res)=>{
   // return res
 
 
-  const {refreshToken} = req.cookies || req.body;
+  const {refreshToken} = req.cookies.refreshToken || req.body.refreshToken;
 
   if(!refreshToken){
     throw new ApiError(400,"unauthorized request");
