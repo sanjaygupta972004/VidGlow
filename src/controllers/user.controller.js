@@ -312,6 +312,32 @@ const changeCurrentUserPassword = asyncHandler(async(req,res)=>{
 });
 
 
+const forgetPassword = asyncHandler(async(req,res)=>{
+  // step to forget password
+
+  // get email from frontend
+  // validate email
+  // check if user exists
+  // generate reset password token
+  // send reset password token to user email
+  // save reset password token in db
+  // return res
+
+  const {email} = req.body;
+
+  if(!email){
+    throw new ApiError(400,"email is required")
+  }
+
+  const user  = User.findOne({email});
+
+  if(!user){
+    throw new ApiError(404,"user not found")
+  };
+
+})
+
+
 const getCurrentUser = asyncHandler(async(req,res)=>{
   // step to get current user
 
@@ -356,7 +382,7 @@ const updateUserProfile = asyncHandler(async(req,res)=>{
    
 
   const updatedUser = await User.findByIdAndUpdate(
-    req.user._id,
+    req.user?._id,
     {
       $set:{
         fullName,
@@ -400,7 +426,7 @@ const updateAvatar = asyncHandler(async(req,res)=>{
   }
 
   const updatedUser = await User.findByIdAndUpdate(
-    req.user._id,
+    req.user?._id,
     {
       $set:{
         avatar:avatar.url
@@ -447,7 +473,7 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
   }
 
   const updatedUser = await User.findByIdAndUpdate(
-    req.user._id,
+    req.user?._id,
     {
       $set:{
         coverImage:coverImage.url
@@ -468,10 +494,6 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
     new ApiResponse(200,updatedUser,"cover image updated successfully")
   )
 })
-
-
-
-
 
 
 
