@@ -225,7 +225,7 @@ const logoutUser = asyncHandler(async(req,res)=>{
 
 
 
-const refreshToken = asyncHandler(async(req,res)=>{
+const reGenerateAccessToken = asyncHandler(async(req,res)=>{
 
   //step to refresh token
 
@@ -316,30 +316,30 @@ const changeCurrentUserPassword = asyncHandler(async(req,res)=>{
 });
 
 
-const forgetPassword = asyncHandler(async(req,res)=>{
-  // step to forget password
+// const forgetPassword = asyncHandler(async(req,res)=>{
+//   // step to forget password
 
-  // get email from frontend
-  // validate email
-  // check if user exists
-  // generate reset password token
-  // send reset password token to user email
-  // save reset password token in db
-  // return res
+//   // get email from frontend
+//   // validate email
+//   // check if user exists
+//   // generate reset password token
+//   // send reset password token to user email
+//   // save reset password token in db
+//   // return res
 
-  const {email} = req.body;
+//   const {email} = req.body;
 
-  if(!email){
-    throw new ApiError(400,"email is required")
-  }
+//   if(!email){
+//     throw new ApiError(400,"email is required")
+//   }
 
-  const user  = User.findOne({email});
+//   const user  = User.findOne({email});
 
-  if(!user){
-    throw new ApiError(404,"user not found")
-  };
+//   if(!user){
+//     throw new ApiError(404,"user not found")
+//   };
 
-})
+// })
 
 
 const getCurrentUser = asyncHandler(async(req,res)=>{
@@ -577,7 +577,7 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
 });
 
 
-const getUserHistory = asyncHandler(async(req,res)=>{
+const getWatchHistory = asyncHandler(async(req,res)=>{
 
   const user =   await User.aggregate([
     {
@@ -636,13 +636,13 @@ export {
     registerUser,
     loginUser,
     logoutUser,
-    refreshToken,
+    reGenerateAccessToken,
     changeCurrentUserPassword,
     getCurrentUser,
     updateUserProfile,
     updateAvatar,
     updateCoverImage,
     getUserChannelProfile,
-    getUserHistory,
+    getWatchHistory,
      
    }
