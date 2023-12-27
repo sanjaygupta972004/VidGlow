@@ -380,11 +380,10 @@ const updateUserProfile = asyncHandler(async(req,res)=>{
 
   const {fullName, email} = req.body;
 
-  if(!(fullName && email)){
-    throw new ApiError(400,"all fields are required")
+  if(!fullName || !email){
+    throw new ApiError(400,"fullName and email is required")
   }
    
-
   const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,
     {
