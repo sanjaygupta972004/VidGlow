@@ -381,7 +381,7 @@ const updateUserProfile = asyncHandler(async(req,res)=>{
   const {fullName, email} = req.body;
 
   if(!fullName || !email){
-    throw new ApiError(400,"fullName and email is required")
+    throw new ApiError(400,"Both Filds Email and FullName are Required")
   }
    
   const updatedUser = await User.findByIdAndUpdate(
@@ -417,6 +417,8 @@ const updateAvatar = asyncHandler(async(req,res)=>{
   // return res
 
   const avatarLocalPath = req.file?.path;
+
+  //console.log(avatarLocalPath);
 
   if(!avatarLocalPath){
     throw new ApiError(400,"avatar is required")
@@ -464,6 +466,8 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
   // return res
 
   const coverImageLocalPath = req.file?.path;
+
+ // console.log(req.file)
 
   if(!coverImageLocalPath){
     throw new ApiError(400,"cover image is required")
@@ -643,5 +647,4 @@ export {
     updateCoverImage,
     getUserChannelProfile,
     getWatchHistory,
-     
    }
