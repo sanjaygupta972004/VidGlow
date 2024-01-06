@@ -135,8 +135,8 @@ const {email, password,username} = req.body;
 
 //console.log({email, password,username})
 
-if(!email && !username){
-  throw new ApiError(400,"email or username is required")
+if(!email && !username && !password){
+  throw new ApiError(400,"All fileds are required")
 }
 
 // if (!(email || password)) {
@@ -165,6 +165,7 @@ const user = await User.findOne(
 
   const options ={
     httpOnly:true,
+   
 
   }
 
@@ -236,8 +237,12 @@ const reGenerateAccessToken = asyncHandler(async(req,res)=>{
   // send new access token in response
   // return res
 
+  //console.log(req.cookies.refreshToken)
 
-  const {refreshToken} = req.cookies.refreshToken || req.body.refreshToken;
+
+  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+
+ // console.log(refreshToken)
 
   if(!refreshToken){
     throw new ApiError(400,"unauthorized request");
@@ -251,7 +256,7 @@ const reGenerateAccessToken = asyncHandler(async(req,res)=>{
 
   const existingUser = await User.findById(decode._id);
 
-  console.log(existingUser) 
+  //console.log(existingUser)   here received only refresh token
 
   if(!existingUser){
     throw new ApiError(400,"user does not exist");
@@ -548,7 +553,6 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
                   then:true,
                   else:false
                 }
-
                 } 
             }
           },
@@ -562,10 +566,11 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
               avatar:1,
               coverImage:1,
               email:1,
-
             }
           }         
   ])
+
+  console.log(channel)
 
   if(!channel?.length){
     throw new ApiError(404,"channel not found")
@@ -585,7 +590,7 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
   const user =   await User.aggregate([
     {
       $match:{
-        _id: mongoose.Types.ObjectId(req.user._id)
+        _id: new mongoose.Types.ObjectId(req.user._id.toString())
       }
     },
     {
@@ -627,12 +632,12 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
     }
   ]);
 
+  //console.log(user[0].watchHistory)
+
   return res
   .status(200)
-  .json(new ApiResponse(200,user[0].wathchHistory,"watch history details fetched successfully"))
-
+  .json(new ApiResponse(200,user[0].watchHistory,"watch history details fetched successfully"))
 })
-
 
 
 export {
@@ -646,5 +651,5 @@ export {
     updateAvatar,
     updateCoverImage,
     getUserChannelProfile,
-    getWatchHistory,
+    getWatchHistory,  
    }

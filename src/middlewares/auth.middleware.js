@@ -5,12 +5,12 @@ import jwt from "jsonwebtoken";
 
 export const jwtVerify  = asyncHandler(async(req,_,next)=>{
   try { 
-    //console.log(req.header("Authorization"));
-    //console.log(req.cookies);
+   // console.log(req.headers.authorization);
+   // console.log(req.cookies);
 
-    let token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+    let token = req.cookies?.accessToken || req.headers.authorization?.replace("Bearer", "").trim();
 
-     //console.log(token);
+    // console.log(token);
      
      if(!token){
   
