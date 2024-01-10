@@ -73,6 +73,50 @@ const publishVideo = asyncHandler(async (req, res) => {
 })
 
 
+const getAllVideos = asyncHandler(async (req, res) => {
+   const {page = 1, limit = 10, sortBy,sortType, query,userId} = req.body
+    
+   const skip = (page - 1) * limit
+
+    let mongoQuery = {}
+
+ 
+   if(query ){
+      mongoQuery.$or = [
+          {title: {$regex:query, $options: "i"}},
+          {description: {$regex:query, $options: "i"}}
+         ]
+   }
+
+  
+   console.log(mongoQuery)
+
+   let sortParams = {}
+
+   if(sortBy){
+      sortParams[sortBy] = sortType==="asc" ? 1 : -1
+   }
+
+   console.log(sortParams)
+
+   const videos = await Video.find(mongoQuery)
+      .skip(skip)
+      .limit(limit)
+      .sort(sortParams)
+
+
+   if(!videos){
+      throw new ApiError(404, "videos not found")
+   }
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200,videos,"videos found successfully"))
+
+
+})
+
+
 const getVideoById = asyncHandler(async (req, res) => {
    
    const {videoId} = req.params
@@ -196,9 +240,9 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 export {
       publishVideo,
+      getAllVideos,
       getVideoById,
       getUserVideos,
       updateVideo,
-      deleteVideo,
-      
+      deleteVideo,    
 }

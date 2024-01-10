@@ -7,6 +7,7 @@ import { upload } from '../middlewares/multer.middleware.js';
 
 import {
    publishVideo,
+   getAllVideos,
    getVideoById,
    getUserVideos,
    updateVideo,
@@ -16,7 +17,7 @@ import {
 router.use(jwtVerify);
 
 router.route('/publishVideo').post(upload.single("videoFile"), publishVideo);
-
+router.route('/getAllVideos').get(getAllVideos);
 router.route('/c/:videoId').get(getVideoById);
 router.route('/getUserVideos').get(getUserVideos);
 router.route('/updateVideo/:videoId').patch(upload.single("thumbnail"),updateVideo)
