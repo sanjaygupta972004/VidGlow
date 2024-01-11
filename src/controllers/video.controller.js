@@ -74,7 +74,7 @@ const publishVideo = asyncHandler(async (req, res) => {
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-   const {page = 1, limit = 10, sortBy,sortType, query,userId} = req.body
+   const {page = 1, limit = 10, sortBy,sortType, query} = req.body
     
    const skip = (page - 1) * limit
 
@@ -97,12 +97,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
       sortParams[sortBy] = sortType==="asc" ? 1 : -1
    }
 
-   console.log(sortParams)
-
+   
    const videos = await Video.find(mongoQuery)
       .skip(skip)
       .limit(limit)
       .sort(sortParams)
+ 
+const totalFetchVideo = videos.length
 
 
    if(!videos){
@@ -111,7 +112,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
    return res
       .status(200)
-      .json(new ApiResponse(200,videos,"videos found successfully"))
+      .json(new ApiResponse(200,{totalFetchVideo,videos},"videos found successfully"))
 
 
 })

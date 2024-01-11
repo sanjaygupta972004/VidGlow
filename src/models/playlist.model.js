@@ -11,7 +11,7 @@ const playlistSchema = new Schema(
          ref: "User",
          required: true,
       },
-      discription:{
+      description:{
          type: String,
          required: true,
       },
