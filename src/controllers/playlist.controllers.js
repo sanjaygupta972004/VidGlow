@@ -79,9 +79,87 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
 })
 
 
+const deleteVideoFromPlaylist = asyncHandler(async (req, res) =>  {
+   const {playlistId,videoId} = req.params;
+   const owner = req.user._id;
 
+   if(!playlistId &&!videoId){
+      throw new ApiError(400, "Please provide playlistId and videoId");
+   }
+
+   const playlist = await Playlist.findById(playlistId);
+
+   if(playlist.owner.toString() !== owner.toString()){
+      throw new ApiError(401, "unauthorized user");
+   }
+
+   if(!playlist.videos.includes(videoId)){
+      throw new ApiError(400, "Video not in playlist");
+   }
+
+
+   const updatedPlaylist = await Playlist.findByIdAndUpdate(playlistId,
+      {$pull: {videos: videoId}},
+       {new: true}
+      );
+
+   if(!updatedPlaylist) {
+      throw new ApiError(500, "Something went wrong while updating playlist");
+   }
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, updatedPlaylist, "Video deleted from playlist successfully"));
+
+
+})
+
+
+const getUserPlaylists = asyncHandler(async (req, res) => {
+   const owner = req.user._id;
+
+   if(!owner){
+      throw new ApiError(401, "unauthorized user");
+   }
+
+   const playlists = await Playlist.find({owner}).populate("videos"); 
+
+   if(!playlists) {
+      throw new ApiError(500, "Something went wrong while fetching playlists");
+   }
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, playlists, "Playlists fetched successfully"))
+
+})
+
+
+const getPlaylistById = asyncHandler(async (req, res) => {
+  
+   const {playlistId} = req.params;
+
+   if(!playlistId){
+   throw new ApiError(400, "Please provide playlistId");
+  }
+
+  const playlist = await Playlist.findById(playlistId).populate("videos");
+ 
+   if(!playlist) {
+   throw new ApiError(500, "Something went wrong while fetching playlist");
+  }
+
+   return res
+     .status(200)
+     .json(new ApiResponse(200, playlist, "Playlist fetched successfully"))
+
+   })
 
 export {
    createPlaylist,
    addVideoToPlaylist,
+   deleteVideoFromPlaylist,
+   getUserPlaylists,
+   getPlaylistById
+
 }
