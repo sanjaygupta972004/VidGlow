@@ -2,8 +2,10 @@ import {asyncHandler} from "../utils/asyncHandler.js";
 
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.model.js"
-import {upLoadOnCloudinary} from "../utils/cloudinary.js"
+import {upLoadOnCloudinary, deleteFromCloudinary,getPublicId} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
+//import { deleteFile } from "../utils/helper.js";
+
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
@@ -68,12 +70,14 @@ const registerUser =  asyncHandler(async(req,res)=>{
                 throw new ApiError(409,"User already exists")
         }
 
-        //console.log(req.files.coverImage)
+        console.log(req.files.coverImage)
        //console.log(req.files.avatar) 
 
 
         const avatarLocalPath = req.files?.avatar[0]?.path;
         //const coverImageLocalPath = req.files?.coverImage[0]?.path;
+        //deleteFile(req.files?.avatar[0]?.path);
+       // deleteFile(req.files?.coverImage[0]?.path);
     
         let coverImageLocalPath;
         if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
@@ -435,17 +439,30 @@ const updateAvatar = asyncHandler(async(req,res)=>{
     throw new ApiError(503,"something went wrong while uploading avatar")
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      $set:{
-        avatar:avatar.url
-      }
-    },
-    {
-      new:true,
+  const user = await User.findById(req.user._id);
+
+  if(!user){
+    throw new ApiError(404,"user is not aviailable")
+  }
+
+  const publicId = getPublicId(user.avatar);
+
+  deleteFromCloudinary(publicId);
+
+
+  const updatedUser = await User.findByIdAndUpdate({
+    _id:req.user._id
+  },
+  {
+    $set:{
+      avatar:avatar.url
     }
-  ).select("-password");  
+  },
+  {
+    new:true,
+  }
+  ).select("-password");
+  
 
   if(!updatedUser){
     throw new ApiError(503,"something went wrong while updating avatar")
@@ -454,11 +471,12 @@ const updateAvatar = asyncHandler(async(req,res)=>{
   return res
   .status(200)
   .json(
-    new ApiResponse(200,updatedUser,"avatar updated successfully")
+    new ApiResponse(200, updatedUser,"avatar updated successfully")
   )
 
 
-});
+  });
+
 
 
 
@@ -483,6 +501,17 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
   if(!coverImage.url){
     throw new ApiError(503,"something went wrong while uploading cover image")
   }
+
+  const user = await User.findById(req.user._id);
+
+  if(!user){
+    throw new ApiError(404,"user is not aviailable")
+  }
+
+
+  const publicId = getPublicId(user.coverImage);
+
+  deleteFromCloudinary(publicId);
 
   const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,

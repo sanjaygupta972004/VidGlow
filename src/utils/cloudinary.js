@@ -2,6 +2,7 @@ import {v2 as cloudinary} from "cloudinary"
 import fs from "fs"
 
 import dotenv from "dotenv";
+
 dotenv.config({
   path: "./.env"
 
@@ -39,4 +40,44 @@ const upLoadOnCloudinary = async function(localFilePath) {
 
 
 
-export {upLoadOnCloudinary }
+const getPublicId = (url) => {
+
+   const splitUrl = url.split("/")
+   const publicId = splitUrl[splitUrl.length - 1].split(".")[0]
+
+    return publicId
+
+    // another method to extract public id
+
+  // const publicId = cloudinary.url(url, { fetch_format: 'auto' }).public_id;
+
+}
+
+
+ const deleteFromCloudinary = async function(publicId) {
+  try {
+      if (!publicId) return null;
+
+       await cloudinary.uploader.destroy(publicId,(error,result)=>{
+        if(error){
+           throw error.message
+        }
+        else{
+          console.log("delete image successfully from clodinary",result)
+        }
+      });
+
+     return null;
+
+  } catch (error) {
+      console.error("Error deleting from Cloudinary:", error.message);
+  }
+}
+
+
+
+export {
+  upLoadOnCloudinary,
+  deleteFromCloudinary,
+  getPublicId
+ }

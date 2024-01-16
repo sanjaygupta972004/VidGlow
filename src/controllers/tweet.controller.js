@@ -2,6 +2,7 @@ import { ApiResponse} from "../utils/ApiResponse.js"
 import { Tweet } from "../models/tweet.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
+import { isValidObjectId } from "mongoose"
 
 // todo : create a tweet, get all tweets, get a single tweet,
 // update a tweet, delete a tweet
@@ -15,9 +16,9 @@ const createTweet = asyncHandler(async (req, res) => {
 
    //console.log(content );
 
-   const owner = req.user._id
-   if(!owner){
-      throw new ApiError(400, "unathorized user")
+   const owner = req.user?._id
+   if(!isValidObjectId(owner)){
+      throw new ApiError(400, "Invalid user id")
    }
 
 
@@ -42,8 +43,14 @@ const createTweet = asyncHandler(async (req, res) => {
 
 const getUserTweets = asyncHandler(async (req, res) => {
 
+   const userId = req.user?._id
+
+   if(!isValidObjectId(userId)){
+      throw new ApiError(400, "Invalid user id")
+   }
+
    const tweets = await Tweet.find({
-      owner: req.user._id
+      owner: userId
    })
 
    if(!tweets){
@@ -78,6 +85,10 @@ const updateTweet = asyncHandler(async (req, res) => {
    const {tweetId} = req.params
    const {content} = req.body
 
+   if(!isValidObjectId(tweetId)){
+      throw new ApiError(400, "Invalid tweet id")
+   }
+
    if(!content && !tweetId){
       throw new ApiError(400, "Content and tweetId are required")
    }
@@ -88,7 +99,7 @@ const updateTweet = asyncHandler(async (req, res) => {
       throw new ApiError(404, "tweet does not exist")
    }
 
-   if(tweet.owner.toString() !== req.user._id.toString()){
+   if(tweet.owner.toString() !== req.user?._id.toString()){
       throw new ApiError(401, "unauthorized user")
    }
 
@@ -106,6 +117,11 @@ const updateTweet = asyncHandler(async (req, res) => {
 
 const deleteTweet = asyncHandler(async (req, res) => {
    const {tweetId} = req.params
+  
+   if(!isValidObjectId(tweetId)){
+      throw new ApiError(400, "Invalid tweet id")
+   }
+
    const result = await Tweet.findById(tweetId)
 
    if(!result){

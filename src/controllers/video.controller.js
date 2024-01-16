@@ -3,12 +3,13 @@ import {Video} from "../models/video.model.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {ApiError} from "../utils/ApiError.js"
 import { upLoadOnCloudinary } from "../utils/cloudinary.js"
+import { isValidObjectId } from "mongoose"
 
 
 
 const publishVideo = asyncHandler(async (req, res) => {
 
-   const {title , description} = req.body
+   const {title , description,isPublished = true} = req.body
 
    if(!title && !description){
       throw new ApiError(400, "title and description are required")
@@ -27,7 +28,7 @@ const publishVideo = asyncHandler(async (req, res) => {
 
    const localVideoUrl = req.file?.path 
 
-   console.log(localVideoUrl)  
+  // console.log(localVideoUrl)  
 
    if(!localVideoUrl) {
       throw new ApiError(400, "video file is required")
@@ -46,17 +47,20 @@ const publishVideo = asyncHandler(async (req, res) => {
       throw new ApiError(500, "error while generating thumbnail")
    }
 
-   const owner = req.user._id
+   const owner = req.user?._id
 
-   console.log(owner)   
-
-   if(!owner){
-      throw new ApiError(400, "unathorized user")
+  
+   if(!isValidObjectId(owner)){
+      throw new ApiError(400, "Invalid user id")
+   
    }
+
+
 
    const video = await Video.create({
       title,
       description,
+      isPublished,
       videoFile: videoUrl.url,
       thumbnail: thumbnailUrl,
       owner
@@ -103,7 +107,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
       .limit(limit)
       .sort(sortParams)
  
-const totalFetchVideo = videos.length
+   const totalFetchVideo = videos.length
 
 
    if(!videos){
@@ -121,6 +125,10 @@ const totalFetchVideo = videos.length
 const getVideoById = asyncHandler(async (req, res) => {
    
    const {videoId} = req.params
+
+   if(!isValidObjectId(videoId)){
+      throw new ApiError(400, "Invalid video id")
+   }
 
    if(!videoId){
       throw new ApiError(400, "videoId is required")
@@ -142,13 +150,13 @@ const getUserVideos = asyncHandler(async (req, res) => {
 
    const userId = req.user._id
 
-   if(!userId){
-      throw new ApiError(401, "unathorized user")
+   if(!isValidObjectId(userId)){
+      throw new ApiError(400, "Invalid user id")
    }
 
    const videos = await Video.find({owner:userId})
 
-   if(!videos){
+   if(videos.length === 0){
       throw new ApiError(404, "videos not found")
    }
 
@@ -162,6 +170,10 @@ const updateVideo = asyncHandler(async (req, res) => {
 
    const {videoId} = req.params
    const {title, description} = req.body
+
+   if(!isValidObjectId(videoId)){
+      throw new ApiError(400, "Invalid video id")
+   }
 
    if(!videoId){
       throw new ApiError(400, "videoId is required")
@@ -177,7 +189,7 @@ const updateVideo = asyncHandler(async (req, res) => {
       throw new ApiError(404, "video not found")
    }
 
-   if(video.owner.toString() !== req.user._id.toString()){
+   if(video.owner.toString() !== req.user?._id.toString()){
       throw new ApiError(401, "unathorized user")
    }
 
@@ -216,6 +228,10 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
    
       const {videoId} = req.params
+
+      if(!isValidObjectId(videoId)){
+         throw new ApiError(400, "Invalid video id")
+      }
    
       if(!videoId){
          throw new ApiError(400, "videoId is required")
