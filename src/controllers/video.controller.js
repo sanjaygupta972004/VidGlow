@@ -2,14 +2,16 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import {Video} from "../models/video.model.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {ApiError} from "../utils/ApiError.js"
-import { upLoadOnCloudinary } from "../utils/cloudinary.js"
+import { upLoadOnCloudinary, deleteFromCloudinary,getPublicId,  thumbnailUrl } from "../utils/cloudinary.js"
 import { isValidObjectId } from "mongoose"
+import mongoose from "mongoose"
 
 
 
 const publishVideo = asyncHandler(async (req, res) => {
+   
 
-   const {title , description,isPublished = true} = req.body
+   const {title , description} = req.body
 
    if(!title && !description){
       throw new ApiError(400, "title and description are required")
@@ -41,9 +43,11 @@ const publishVideo = asyncHandler(async (req, res) => {
       throw new ApiError(500, "something went wrong while uploading video")
    }
 
-   const thumbnailUrl =  videoUrl.url.replace("mp4", "png")
+   //const thumbnailUrl =  videoUrl.url.replace("mp4", "png")
 
-   if(!thumbnailUrl){
+   const  clodinaryThumbnailUrl  =  await thumbnailUrl(videoUrl.url)
+
+   if(!clodinaryThumbnailUrl){
       throw new ApiError(500, "error while generating thumbnail")
    }
 
@@ -56,15 +60,13 @@ const publishVideo = asyncHandler(async (req, res) => {
    }
 
 
-
    const video = await Video.create({
       title,
       description,
-      isPublished,
       videoFile: videoUrl.url,
-      thumbnail: thumbnailUrl,
+      thumbnail: clodinaryThumbnailUrl,
       owner
-   })
+   }).select("-owner")
 
    if(!video){
       throw new ApiError(500, "something went wrong while creating video")
@@ -78,22 +80,13 @@ const publishVideo = asyncHandler(async (req, res) => {
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-   const {page = 1, limit = 10, sortBy,sortType, query} = req.body
+   const {page = 1, limit = 10, sortBy,sortType, query,userId} = req.body
     
    const skip = (page - 1) * limit
 
-    let mongoQuery = {}
-
- 
-   if(query ){
-      mongoQuery.$or = [
-          {title: {$regex:query, $options: "i"}},
-          {description: {$regex:query, $options: "i"}}
-         ]
-   }
 
   
-   console.log(mongoQuery)
+   //console.log(mongoQuery)
 
    let sortParams = {}
 
@@ -102,21 +95,71 @@ const getAllVideos = asyncHandler(async (req, res) => {
    }
 
    
-   const videos = await Video.find(mongoQuery)
-      .skip(skip)
-      .limit(limit)
-      .sort(sortParams)
+   let videos = await Video.aggregate([
+      {
+         $match:{
+            $and:[
+               {owner:new mongoose.Types.ObjectId(userId)},
+               {$or: [
+                  {title: {$regex:query, $options: "i"}},
+                  {description: {$regex:query, $options: "i"}}
+                  
+               ]}
+
+            ]
+         }
+      },
+      {
+      $lookup:{
+         from:"users",
+         localField:"owner",
+         foreignField:"_id",
+         as:"owner"
+      },
+      },
+     
+      {
+         $unwind: "$owner"
+       },
+       {
+         $project: {
+           _id: 1, 
+           title: 1,
+           description: 1,
+           owner: {
+             fullName: 1,
+             email: 1,
+             username: 1,
+             profilePic: 1
+           },
+
+         }
+       },
+      {
+         $sort:sortParams
+      },
+      {
+         $skip:skip
+      },
+      {
+         $limit:limit
+      }
+   ])
+
+    console.log(videos)
+      
  
    const totalFetchVideo = videos.length
+   
 
 
-   if(!videos){
+   if(videos.length===0){
       throw new ApiError(404, "videos not found")
    }
 
    return res
       .status(200)
-      .json(new ApiResponse(200,{totalFetchVideo,videos},"videos found successfully"))
+      .json(new ApiResponse(200,{ videos,totalFetchVideo},"videos found successfully"))
 
 
 })

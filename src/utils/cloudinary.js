@@ -39,7 +39,6 @@ const upLoadOnCloudinary = async function(localFilePath) {
 }
 
 
-
 const getPublicId = (url) => {
 
    const splitUrl = url.split("/")
@@ -75,9 +74,24 @@ const getPublicId = (url) => {
 }
 
 
+const thumbnailUrl =   async function(url) {
+    try {
+        if (!url) return null;
+        
+        const thumbnailUrl  = url.replace("mp4", "png")
+
+        return thumbnailUrl;
+
+    }catch (error) {
+        console.error("Error generating thumbnail:", error.message);
+        return null;
+    }
+}
+
 
 export {
   upLoadOnCloudinary,
   deleteFromCloudinary,
-  getPublicId
+  getPublicId,
+  thumbnailUrl
  }

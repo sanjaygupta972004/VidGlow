@@ -1,14 +1,19 @@
 
 import fs from 'fs';
 
- export const deleteFile = async(filePath) => {
+ export const deleteLocalFile = async(filePath) => {
    try {
-      if(filePath) return null
+      if (!filePath) return null
 
-      if(filePath === undefined || filePath === null) {
-         fs.unlinkSync(filePath)
-      }
-
+      fs.unlinkSync(filePath,(err)=>{
+         if(err){
+            throw err
+         }
+         else{
+            console.log("delete image successfully from local",filePath)
+         }
+      
+      }) // remove locally saved temporary file path
    return null
 
    } catch (error) {
