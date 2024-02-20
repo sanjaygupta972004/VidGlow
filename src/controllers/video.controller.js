@@ -112,6 +112,7 @@ return res
 })
 
 
+
 const getAllVideos = asyncHandler(async (req, res) => {
    const {page = 1, limit = 10, sortBy,sortType, query,userId} = req.body
     
@@ -197,7 +198,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 })
 
-
 const getVideoById = asyncHandler(async (req, res) => {
    
    const {videoId} = req.params
@@ -206,21 +206,68 @@ const getVideoById = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Invalid video id")
    }
 
-   if(!videoId){
-      throw new ApiError(400, "videoId is required")
+  const video = await Video.aggregate([
+
+   {
+     $match: {
+       _id: new mongoose.Types.ObjectId(videoId)
+     }
+   },
+   {
+     $set: { 
+       views: { $add: ['$views', 1] } 
+     }
+   },
+   {
+     $lookup: {
+       from: "comments",
+       localField: "_id",
+       foreignField: "video",
+       as: "comments"
+     },
+
+   },
+   {
+     $lookup: {
+       from: "likes",
+       localField: "_id",
+       foreignField: "video",
+       as: "likes"
+     }
+   },
+   {
+     $addFields: {
+       totalLikes: { $size: "$likes" },
+       totalComments: { $size: "$comments" }
+     }
+   },
+  
+   {
+     $project: {
+       title: 1,
+       description: 1,
+       videoFile: 1,
+       thumbnail: 1,
+       views: 1,
+       owner: 1,
+       totalLikes: 1,
+       totalComments: 1,
+       comments: 1,
+       likes: 1,
+     }
    }
+ ]);
+ 
+ if (!video?.length) {
+   throw new ApiError(404, "video not found");
+ }
+ 
+ return res
+   .status(200)
+   .json(new ApiResponse(200, video[0], "video found successfully"));
 
-   const video = await Video.findById(videoId)
-
-   if(!video){
-      throw new ApiError(404, "video not found")
-   }
-
-   return res
-      .status(200)
-      .json(new ApiResponse(200,video,"video found successfully"))
+ 
 })
-
 
 const getUserVideos = asyncHandler(async (req, res) => {
 
