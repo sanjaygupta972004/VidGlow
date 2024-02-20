@@ -1,10 +1,9 @@
 import {asyncHandler} from "../utils/asyncHandler.js";
-
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.model.js"
 import {upLoadOnCloudinary, deleteFromCloudinary,getPublicId} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { deleteLocalFile } from "../utils/helper.js";
+
 
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -325,30 +324,6 @@ const changeCurrentUserPassword = asyncHandler(async(req,res)=>{
 });
 
 
-// const forgetPassword = asyncHandler(async(req,res)=>{
-//   // step to forget password
-
-//   // get email from frontend
-//   // validate email
-//   // check if user exists
-//   // generate reset password token
-//   // send reset password token to user email
-//   // save reset password token in db
-//   // return res
-
-//   const {email} = req.body;
-
-//   if(!email){
-//     throw new ApiError(400,"email is required")
-//   }
-
-//   const user  = User.findOne({email});
-
-//   if(!user){
-//     throw new ApiError(404,"user not found")
-//   };
-
-// })
 
 
 const getCurrentUser = asyncHandler(async(req,res)=>{
@@ -618,7 +593,7 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
   const user =   await User.aggregate([
     {
       $match:{
-        _id: new mongoose.Types.ObjectId(req.user._id.toString())
+        _id: new mongoose.Types.ObjectId(req.user?._id)
       }
     },
     {
@@ -644,7 +619,6 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
                     username:1
                   }
                 }
-             
               ]
             }
         },

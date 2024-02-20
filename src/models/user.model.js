@@ -14,8 +14,6 @@ const userSchema = new Schema(
                         lowercase : true,
                         trim: true,
                         index: true,
-              
-                
                 },
                 email:{
                         type : String,
@@ -50,12 +48,7 @@ const userSchema = new Schema(
                 refreshToken:{
                         type: String,
                 },
-                resetPasswordToken:{
-                        type: String,
-                },
-                resetPasswordExpire:{
-                        type: Date,
-                },
+             
                 
         },
         {timestamps: true}
@@ -102,21 +95,6 @@ userSchema.methods.generateRefresToken =  function(){
 
                 }
         )
-}
-
-userSchema.methods.generateResetPasswordToken = async function(){
-        const resetToken =  await crypto.randomBytes(20).toString("hex");
-
-        this.resetPasswordToken = crypto
-        .createHash("sha256")
-        .update(resetToken)
-        .digest("hex");
-
-        this.resetPasswordExpire = Date.now() + 10 * (60 * 1000);
-
-        return resetToken;
-
-}
-
+};
 
 export const User = mongoose.model('User',userSchema);

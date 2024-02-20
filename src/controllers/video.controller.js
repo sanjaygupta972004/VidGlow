@@ -9,7 +9,7 @@ import mongoose from "mongoose"
 
 
 const publishVideo = asyncHandler(async (req, res) => {
-   
+
 
    const {title , description} = req.body
 
@@ -55,7 +55,7 @@ const publishVideo = asyncHandler(async (req, res) => {
 
   
    if(!isValidObjectId(owner)){
-      throw new ApiError(400, "Invalid user id")
+      throw new ApiError(400, "user is not valid to create video")
    
    }
 
@@ -66,7 +66,7 @@ const publishVideo = asyncHandler(async (req, res) => {
       videoFile: videoUrl.url,
       thumbnail: clodinaryThumbnailUrl,
       owner
-   }).select("-owner")
+   })
 
    if(!video){
       throw new ApiError(500, "something went wrong while creating video")
@@ -75,6 +75,39 @@ const publishVideo = asyncHandler(async (req, res) => {
    return res
       .status(201)
       .json(new ApiResponse(201,video,"video created successfully"))
+
+})
+
+
+
+const isPublishVideo = asyncHandler(async (req, res) => {
+const {videoId} = req.params
+const userId = req.user?._id
+
+
+if(!isValidObjectId(videoId) ){
+   throw new ApiError(400, "Invalid videoId ")
+}
+
+if(!(isValidObjectId(userId))){
+   throw new ApiError(400, "Invalid userId")
+}
+
+const video = await Video.findById(videoId)
+
+if(video.owner.toString() !== userId.toString()){
+   throw new ApiError(401, "you are not authorized to publish this video")
+}
+
+video.isPublished ? video.isPublished =  false : video.isPublished = true
+
+await video.save({
+   validateBeforeSave:false
+})
+
+return res
+     .status(200)
+     .json(new ApiResponse(200,{},"video published successfully"))
 
 })
 
@@ -300,6 +333,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 export {
       publishVideo,
+      isPublishVideo,
       getAllVideos,
       getVideoById,
       getUserVideos,
