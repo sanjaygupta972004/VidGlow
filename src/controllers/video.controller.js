@@ -8,6 +8,7 @@ import mongoose from "mongoose"
 
 
 
+
 const publishVideo = asyncHandler(async (req, res) => {
 
 
@@ -111,93 +112,92 @@ return res
 
 })
 
-
-
 const getAllVideos = asyncHandler(async (req, res) => {
-   const {page = 1, limit = 10, sortBy,sortType, query,userId} = req.body
-    
-   const skip = (page - 1) * limit
+   const { page = 1, limit = 10, query } = req.body;
+   const userId = req.user?._id;
 
-
-  
-   //console.log(mongoQuery)
-
-   let sortParams = {}
-
-   if(sortBy){
-      sortParams[sortBy] = sortType==="asc" ? 1 : -1
+   if (isNaN(page) || isNaN(limit) || typeof query !== 'string') {
+       throw new ApiError(400, "Invalid input parameters");
    }
 
-   
-   let videos = await Video.aggregate([
-      {
-         $match:{
-            $and:[
-               {owner:new mongoose.Types.ObjectId(userId)},
-               {$or: [
-                  {title: {$regex:query, $options: "i"}},
-                  {description: {$regex:query, $options: "i"}}
-                  
-               ]}
+   const skip = (page - 1) * limit;
 
-            ]
-         }
-      },
-      {
-      $lookup:{
-         from:"users",
-         localField:"owner",
-         foreignField:"_id",
-         as:"owner"
-      },
-      },
-     
-      {
-         $unwind: "$owner"
+   const sortParams = { createdAt: -1 };
+   const options = {
+       page: page,
+       limit: limit,
+       customLabels: {
+           docs: 'videos',
+           totalDocs: 'totalFetchVideo'
+       },
+   }
+
+   const pipeline = [
+       {
+           $match: {
+               $and: [
+                   { owner: new mongoose.Types.ObjectId(userId) },
+                   {
+                       $or: [
+                           { title: { $regex: query, $options: "i" } },
+                           { description: { $regex: query, $options: "i" } }
+                       ]
+                   }
+               ]
+           }
        },
        {
-         $project: {
-           _id: 1, 
-           title: 1,
-           description: 1,
-           owner: {
-             fullName: 1,
-             email: 1,
-             username: 1,
-             profilePic: 1
-           },
-
-         }
+           $lookup: {
+               from: "likes",
+               localField: "_id",
+               foreignField: "video",
+               as: "likes"
+           }
        },
-      {
-         $sort:sortParams
-      },
-      {
-         $skip:skip
-      },
-      {
-         $limit:limit
-      }
-   ])
+       {
+           $addFields: {
+               totalLikes: { $size: "$likes" }
+           }
+       },
+       {
+           $sort: sortParams
+       },
+       {
+           $skip: skip
+       },
+       {
+           $limit: limit
+       },
+       {
+           $project: {
+               title: 1,
+               description: 1,
+               videoFile: 1,
+               thumbnail: 1,
+               views: 1,
+               owner: 1,
+               totalLikes: 1,
+           }
+       }
+   ];
 
-    console.log(videos)
-      
- 
-   const totalFetchVideo = videos.length
-   
+   try {
+       let videos = await Video.aggregatePaginate(pipeline, options);
+       console.log(videos);
 
+       if (!videos || videos.length === 0) {
+           throw new ApiError(404, "Videos not found");
+       }
 
-   if(videos.length===0){
-      throw new ApiError(404, "videos not found")
+       return res.status(200).json(new ApiResponse(200, videos, "Videos found successfully"));
+   } catch (error) {
+       console.error("Error occurred:", error);
+       throw new ApiError(500, "Internal server error");
    }
-
-   return res
-      .status(200)
-      .json(new ApiResponse(200,{ videos,totalFetchVideo},"videos found successfully"))
+});
 
 
-})
-
+//  required  some changes in this controllers
 const getVideoById = asyncHandler(async (req, res) => {
    
    const {videoId} = req.params
@@ -205,7 +205,6 @@ const getVideoById = asyncHandler(async (req, res) => {
    if(!isValidObjectId(videoId)){
       throw new ApiError(400, "Invalid video id")
    }
-
   const video = await Video.aggregate([
 
    {
@@ -213,11 +212,14 @@ const getVideoById = asyncHandler(async (req, res) => {
        _id: new mongoose.Types.ObjectId(videoId)
      }
    },
+
    {
-     $set: { 
-       views: { $add: ['$views', 1] } 
-     }
+      $set: {
+         views: { $add: [ "$views", 1 ] }
+      }
    },
+ 
+
    {
      $lookup: {
        from: "comments",
@@ -243,8 +245,15 @@ const getVideoById = asyncHandler(async (req, res) => {
              ]
            }
          },
+         {
+             $addFields: {
+                owner: { $arrayElemAt: ["$owner", 0] }
+             }
+          },
+
        ]
      },
+
    },
    {
      $lookup: {
@@ -258,7 +267,7 @@ const getVideoById = asyncHandler(async (req, res) => {
      $addFields: {
        totalLikes: { $size: "$likes" },
        totalComments: { $size: "$comments" },
-       owner: { first:  '$owner' }
+     
      }
    },
   
@@ -277,6 +286,26 @@ const getVideoById = asyncHandler(async (req, res) => {
      }
    }
  ]);
+
+   const views = video[0].views
+
+   const resVideo = video[0]
+    
+
+ const userId = req.user?._id
+
+ if( resVideo.owner.toString() !== userId.toString()){
+   
+   await Video.findByIdAndUpdate(
+      videoId, 
+      {
+      views: views 
+    },
+   {
+      new: true
+   }
+   )
+ }
  
  if (!video?.length) {
    throw new ApiError(404, "video not found");
