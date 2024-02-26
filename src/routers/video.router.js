@@ -11,7 +11,8 @@ import {
    getAllVideos,
    getVideoById,
    getUserVideos,
-   updateVideo,
+   updateTitleOrDescriptionVideo,
+   updateThumbnailVideo,
    deleteVideo
 } from '../controllers/video.controller.js';
 
@@ -22,7 +23,7 @@ router.route('/isPublishVideo/c/:videoId').get(isPublishVideo);
 router.route('/getAllVideos').get(getAllVideos);
 router.route('/c/:videoId').get(getVideoById);
 router.route('/getUserVideos').get(getUserVideos);
-router.route('/updateVideo/:videoId').patch(upload.single("thumbnail"),updateVideo)
+router.route('/updateVideo/:videoId').patch(upload.single("thumbnail"),updateThumbnailVideo).patch(updateTitleOrDescriptionVideo)
 router.route('/deleteVideo/:videoId').delete(deleteVideo)
 
 

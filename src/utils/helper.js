@@ -1,11 +1,25 @@
 
 import fs from 'fs';
 
- export const deleteLocalFile = async(filePath) => {
-   try {
-      if (!filePath) return null
+ export const getStaticFile = (filename) => {
+   if (!filename) return null
+   const filePath = `${req.protocol}://${req.get('host')}/public/${filename}`
+   return filePath
 
-      fs.unlinkSync(filePath,(err)=>{
+}
+
+ export const getLocalFile =  (filename) => {
+      if (!filename) return null
+      const filePath = `./public/${filename}`
+      return filePath
+}
+
+
+ export const deleteLocalFile = async(localFile) => {
+   try {
+      if (!localFile) return null
+
+      fs.unlinkSync(localFile,(err)=>{
          if(err){
             throw err
          }
@@ -18,5 +32,22 @@ import fs from 'fs';
 
    } catch (error) {
       console.error(`Error deleting file: ${error.message}`)
+   }
+}
+
+export const removeUnusedMulterFilesOnError = (req) =>{
+   const files = req.files
+   const file = req.file
+   if(file){
+      deleteLocalFile(file.path)
+   }
+
+   if(files){
+      const filesValuesArray = Object.values(files)   
+      filesValuesArray.map(fileFiled => {
+         fileFiled.map(file => {
+            deleteLocalFile(file.path)
+         })
+      })
    }
 }

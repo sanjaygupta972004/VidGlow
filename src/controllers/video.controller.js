@@ -339,7 +339,7 @@ const getUserVideos = asyncHandler(async (req, res) => {
 })
 
 
-const updateVideo = asyncHandler(async (req, res) => {
+const updateTitleOrDescriptionVideo = asyncHandler(async (req, res) => {
 
    const {videoId} = req.params
    const {title, description} = req.body
@@ -348,12 +348,12 @@ const updateVideo = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Invalid video id")
    }
 
-   if(!videoId){
-      throw new ApiError(400, "videoId is required")
+   if(isValidObjectId(videoId) === false){
+      throw new ApiError(400, "videoId is invalid")
    }
 
-   if(!(title || description)){
-      throw new ApiError(400, "title or description is required")
+   if(!(title && description)){
+      throw new ApiError(400, "title and description is required")
    }
 
    const video = await Video.findById(videoId)
@@ -363,39 +363,80 @@ const updateVideo = asyncHandler(async (req, res) => {
    }
 
    if(video.owner.toString() !== req.user?._id.toString()){
-      throw new ApiError(401, "unathorized user")
+      throw new ApiError(401, "you are not authorized to update this video")
    }
 
-   const localThumbnailUrl = req.file?.path
-
-   if(!localThumbnailUrl){
-      throw new ApiError(400, "thumbnail is required")
-   }
-
-   const thumbnailUrl = await upLoadOnCloudinary(localThumbnailUrl)
-
-   if(!thumbnailUrl){
-      throw new ApiError(500, "something went wrong while uploading thumbnail")
-   }
-
-   const updatedVideo = await Video.findByIdAndUpdate(videoId, {
+   const updatedVideo = await Video.findByIdAndUpdate(videoId, 
+      {
       title,
       description,
-      thumbnail: thumbnailUrl.url
    },
    {new:true}
 
    )
-
    if(!updatedVideo){
       throw new ApiError(500,"something went wrong while uploading video")
    }
 
    return res
       .status(200)
-      .json(new ApiResponse(200,updatedVideo,"successfully updated video details"))
+      .json(new ApiResponse(200,updatedVideo,"successfully updated title and description of video details"))
 
 })
+
+
+const updateThumbnailVideo = asyncHandler(async (req, res) => {
+   const {videoId} = req.params
+   const userId = req.user?._id
+
+   if(!isValidObjectId(videoId)){
+      throw new ApiError(400, "Invalid videoId")
+  }
+
+   if(!isValidObjectId(userId)){
+      throw new ApiError(400, "Invalid userId")
+   }
+
+   const localThumbnailPath = req.file?.path
+
+   if(!localThumbnailPath){
+      throw new ApiError(400, "thumbnail is required")
+   }
+
+   const  thumbnailUrl = await upLoadOnCloudinary(localThumbnailPath)
+
+   if(!thumbnailUrl){
+      throw new ApiError(500, "something went wrong while uploading thumbnail")
+   }
+
+   const video = await Video.findById(videoId)
+
+   if(video.owner.toString() !== userId.toString()){
+      throw new ApiError(401, "you are not authorized to update thumbnail of video")
+   }
+
+   const oldThumbnail = video.thumbnail
+
+   const publicId = getPublicId(oldThumbnail)
+   await deleteFromCloudinary(publicId)
+
+   const updatedVideo = await Video.findByIdAndUpdate(videoId,{
+      thumbnail: thumbnailUrl
+   },
+   {
+      new: true
+   }
+   )
+
+   if(!updatedVideo){
+      throw new ApiError(500, "something went wrong while updating thumbnail")
+   }
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200,updatedVideo,"successfully updated thumbnail of video"))
+
+ })     
 
 
 const deleteVideo = asyncHandler(async (req, res) => {
@@ -413,11 +454,11 @@ const deleteVideo = asyncHandler(async (req, res) => {
       const video = await Video.findById(videoId)
    
       if(!video){
-         throw new ApiError(404, "video not found")
+         throw new ApiError(404, "video does not exist")
       }
    
       if(video.owner.toString() !== req.user._id.toString()){
-         throw new ApiError(401, "unathorized user")
+         throw new ApiError(401, "you are not authorized to delete video")
       }
    
       await Video.findByIdAndDelete(videoId)
@@ -434,6 +475,7 @@ export {
       getAllVideos,
       getVideoById,
       getUserVideos,
-      updateVideo,
+      updateTitleOrDescriptionVideo,
+      updateThumbnailVideo,
       deleteVideo,    
 }

@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from "cookie-parser";
-
+import { errorMiddleware } from './middlewares/error.middleware.js';
 
 const app = express();
 
@@ -18,22 +18,18 @@ app.use(express.urlencoded({
 app.use(express.static("public"))
 app.use(cookieParser());
 
-
 // routers import 
 import userRouter  from "./routers/user.route.js";
 import tweetRouter  from "./routers/tweet.router.js";
 import videoRouter from "./routers/video.router.js";
 import playlistRouter from "./routers/playlist.router.js";
 
-
 // routes declaration
-
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/videos", videoRouter)
 app.use("/api/v1/playlists", playlistRouter)
 
-
-
+app.use(errorMiddleware)
 
 export {app}
