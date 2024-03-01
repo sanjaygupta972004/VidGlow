@@ -4,14 +4,14 @@ import mongoose from "mongoose"
 
 
 export const errorMiddleware = (err, req, res, next) => {
-   const error  = err 
+   let error  = err 
    if(!(error instanceof ApiError)){
      const statusCode = error.statusCode  =  error instanceof mongoose.Error ? 400 : 500
      const message =  error.message =  error.message || "Something went wrong"
       error = new ApiError(statusCode,message, error?.errors||[], error?.stack)
    }
 
-   removeUnusedMulterFilesOnError(req)
+  removeUnusedMulterFilesOnError(req)
 
    const response = {
       ...error,

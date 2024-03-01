@@ -183,8 +183,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
    try {
        let videos = await Video.aggregatePaginate(pipeline, options);
-       console.log(videos);
-
+   
        if (!videos || videos.length === 0) {
            throw new ApiError(404, "Videos not found");
        }
@@ -327,7 +326,7 @@ const getUserVideos = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Invalid user id")
    }
 
-   const videos = await Video.find({owner:userId})
+   const videos = await Video.aggregatePaginate({owner:userId})
 
    if(videos.length === 0){
       throw new ApiError(404, "videos not found")
@@ -399,14 +398,16 @@ const updateThumbnailVideo = asyncHandler(async (req, res) => {
 
    const localThumbnailPath = req.file?.path
 
+
    if(!localThumbnailPath){
       throw new ApiError(400, "thumbnail is required")
    }
 
    const  thumbnailUrl = await upLoadOnCloudinary(localThumbnailPath)
 
+
    if(!thumbnailUrl){
-      throw new ApiError(500, "something went wrong while uploading thumbnail")
+      throw new ApiError(500, "something went wrong while thumbnail from cloudinary")
    }
 
    const video = await Video.findById(videoId)
@@ -420,8 +421,10 @@ const updateThumbnailVideo = asyncHandler(async (req, res) => {
    const publicId = getPublicId(oldThumbnail)
    await deleteFromCloudinary(publicId)
 
+  
+
    const updatedVideo = await Video.findByIdAndUpdate(videoId,{
-      thumbnail: thumbnailUrl
+      thumbnail: thumbnailUrl.url
    },
    {
       new: true
@@ -452,6 +455,11 @@ const deleteVideo = asyncHandler(async (req, res) => {
       }
    
       const video = await Video.findById(videoId)
+
+      const publicId = getPublicId(video.thumbnail)
+      await deleteFromCloudinary(publicId)
+      const videoPublicId = getPublicId(video.videoFile)
+      await deleteFromCloudinary(videoPublicId)
    
       if(!video){
          throw new ApiError(404, "video does not exist")

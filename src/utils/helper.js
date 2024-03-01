@@ -15,7 +15,7 @@ import fs from 'fs';
 }
 
 
- export const deleteLocalFile = async(localFile) => {
+ export const deleteLocalFile = (localFile) => {
    try {
       if (!localFile) return null
 
