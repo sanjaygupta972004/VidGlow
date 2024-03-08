@@ -54,7 +54,92 @@ const crateVideoComment = asyncHandler(async(req,res)=> {
 
 })
 
+const updateVideoComment = asyncHandler(async(req,res)=> {
+   const{content} = req.body
+   const {commentId} = req.params
+   const owner = req.user?._id
+
+   if(!isValidObjectId(commentId)){
+      throw new ApiError(400,"invalid commentId")
+   }
+
+   if(!content){
+      throw new ApiError(400,"content is required to updateComment")
+   }
+
+   const exitingComment  = await Comment.findById(commentId)
+
+   if(!exitingComment){
+      throw new ApiError(404,"this comment is not availabe to updating")
+   }
+   if(exitingComment.owner.toString() !== owner.toString()){
+      throw new ApiError(403,"you are not authorized to updateComment")
+   }
+
+   const updatedComment = await Comment.findByIdAndUpdate(commentId,
+      {
+         content:content
+      },
+      {
+         new:true
+      }
+   )
+   
+   if(!updatedComment){
+      throw new ApiError(500, "something went to wrong while updating comment")
+   }
+
+   return res 
+        .status(200)
+        .json(new ApiResponse(200,updatedComment,"updated comment successfully"))
+
+})
+
+
+const deleteVideoComment = asyncHandler(async(req,res)=> {
+   const {commentId} = req.params
+   const owner = req.user?._id
+
+   if(!isValidObjectId(commentId)){
+      throw new ApiError(400,"invalid commentId")
+   }
+
+
+   const exitingComment  = await Comment.findById(commentId)
+
+
+   if(!exitingComment){
+      throw new ApiError(404,"this comment is not available for deleting")
+   }
+   if(exitingComment.owner.toString() !== owner.toString()){
+      throw new ApiError(403,"you are not authorized to deleteComment")
+   }
+
+   const result = await Comment.findByIdAndDelete(commentId)
+
+   console.log(result)
+   
+   if(!result){
+      throw new ApiError(500, "something went to wrong while deleting comment")
+   }
+
+   return res 
+        .status(200)
+        .json(new ApiResponse(200,{},"updated comment successfully"))
+
+})
+
+
+const getAllVideoComments = asyncHandler(async(req,res) => {
+
+})
+
+
+
 
 export {
-   crateVideoComment
+   crateVideoComment,
+   updateVideoComment,
+   deleteVideoComment,
+   getAllVideoComments
 }
