@@ -1,8 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from "cookie-parser";
+import requestIp from "request-ip"
 import { errorMiddleware } from './middlewares/error.middleware.js';
-
+import { rateLimiter } from './middlewares/rateLimiter.middlewares.js';
 const app = express();
 
 app.use(cors({
@@ -17,7 +18,8 @@ app.use(express.urlencoded({
 }));
 app.use(express.static("public"))
 app.use(cookieParser());
-
+app.use(requestIp.mw())
+app.use(rateLimiter)
 // routers import 
 import userRouter  from "./routers/user.route.js";
 import tweetRouter  from "./routers/tweet.router.js";
