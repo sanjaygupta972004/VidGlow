@@ -137,7 +137,7 @@ const getAllVideoComments = asyncHandler(async (req, res) => {
       video:videoId
    })
 
-   if (!comment) {
+   if (!comments) {
       throw new ApiError(500,"Something wrong while fetching comments")
    }
    return res

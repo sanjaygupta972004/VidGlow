@@ -39,17 +39,19 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
    const {playlistId, videoId} = req.params;
    const owner = req.user._id;
 
-   
+    if(!isValidObjectId(playlistId) || !isValidObjectId(videoId)){
+      throw new ApiError(400, "Invalid playlistId or videoId");
+    }
 
    if(!playlistId &&!videoId){
-      throw new ApiError(400, "Please provide all required fields");
+      throw new ApiError(400, "Please provide  playlistId and videoId");
    }
 
 
    const playlist = await Playlist.findById(playlistId);
 
    if(!playlist){
-      throw new ApiError(404, "Playlist not found");
+      throw new ApiError(404, "given playlistId of playlist is not available in database pls create playlist first"); 
    }  
 
 
@@ -182,7 +184,7 @@ const deletePlaylist = asyncHandler(async(req,res)=>{
 })
 
 
-const updataPlaylist = asyncHandler( async() => {
+const updatePlaylist = asyncHandler( async() => {
    const {title, description} = req.body
    const {playlistId} = req.params
 
@@ -191,7 +193,7 @@ const updataPlaylist = asyncHandler( async() => {
    }
 
    if(!title || !description){
-      throw new ApiError(400, "all filds are required")
+      throw new ApiError(400, "all fields are required")
    }
 
    const playlist = await Playlist.find({
@@ -223,7 +225,7 @@ const updataPlaylist = asyncHandler( async() => {
 
    return res
        .status(200)
-       .json(200, updataPlaylist, "updated playlist successfully")
+       .json(200, updatePlaylist, "updated playlist successfully")
    
 })
 
@@ -234,6 +236,6 @@ export {
    getUserPlaylists,
    getPlaylistById,
    deletePlaylist,
-   updataPlaylist  
+   updatePlaylist  
 
 }

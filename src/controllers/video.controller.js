@@ -9,7 +9,7 @@ import mongoose from "mongoose"
 
 
 
-const publishVideo = asyncHandler(async (req, res) => {
+const publishVideo = asyncHandler(async (reqbpm, res) => {
 
 
    const {title , description} = req.body
