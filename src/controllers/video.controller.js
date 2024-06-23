@@ -9,7 +9,7 @@ import mongoose from "mongoose"
 
 
 
-const publishVideo = asyncHandler(async (reqbpm, res) => {
+const publishVideo = asyncHandler(async (req, res) => {
 
 
    const {title , description} = req.body
@@ -113,11 +113,16 @@ return res
 })
 
 const getAllVideos = asyncHandler(async (req, res) => {
-   const { page = 1, limit = 10, query } = req.body;
+   const { page = 1, limit = 10,searchByWords } = req.query;
    const userId = req.user?._id;
 
-   if (isNaN(page) || isNaN(limit) || typeof query !== 'string') {
-       throw new ApiError(400, "Invalid input parameters");
+
+   if( searchByWords && typeof searchByWords !== "string"){
+      throw new ApiError(400, "searchByWords should be a string")
+   }
+
+   if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+       throw new ApiError(400, "Invalid page or limit value provided in query params");
    }
 
    const skip = (page - 1) * limit;
@@ -139,8 +144,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
                    { owner: new mongoose.Types.ObjectId(userId) },
                    {
                        $or: [
-                           { title: { $regex: query, $options: "i" } },
-                           { description: { $regex: query, $options: "i" } }
+                           { title: { $regex: searchByWords, $options: "i" } },
+                           { description: { $regex: searchByWords, $options: "i" } }
                        ]
                    }
                ]
