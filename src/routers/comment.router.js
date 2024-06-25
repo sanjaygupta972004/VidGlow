@@ -13,7 +13,7 @@ import {
 
 router.use(jwtVerify)
 
-router.route("/createComment/c/:videoId").post(crateVideoComment)
+router.route("/createVideoComment/c/:videoId").post(crateVideoComment)
 router.route("/getAllVideoComments/c/:videoId").get(getAllVideoComments)
 router.route("/updateComment/c/:commentId").patch(updateVideoComment)
 router.route("/deleteComment/c/:commentId").delete(deleteVideoComment)

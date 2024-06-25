@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Comment } from "../models/comment.model.js";
 import { isValidObjectId } from "mongoose";
 import { Video } from "../models/video.model.js";
+import mongoose from "mongoose";
 
 const crateVideoComment = asyncHandler(async(req,res)=> {
    const {content} = req.body
@@ -24,8 +25,7 @@ const crateVideoComment = asyncHandler(async(req,res)=> {
          owner:owner
       }]
    })
-
-
+   
     oldComment.map((comment)=>{
       if(comment.content === content){
          throw new ApiError(400,"this comment already exit pls send another comment")
@@ -35,7 +35,7 @@ const crateVideoComment = asyncHandler(async(req,res)=> {
 
    const video = await Video.findById(videoId)
    if(!video){
-      throw new ApiError(404, "video is not available for comment")
+      throw new ApiError(404, "video is not available to comment on it")
    }
 
    const comment  = await Comment.create({
@@ -127,23 +127,83 @@ const deleteVideoComment = asyncHandler(async(req,res)=> {
 
 })
 
-
 const getAllVideoComments = asyncHandler(async (req, res) => {
-   const { videoId } = req.params
+   const { videoId } = req.params;
+   const { page = 1, limit = 10 } = req.query;
+ 
    if (!isValidObjectId(videoId)) {
-      throw new ApiError(403, "videoId is not valid")
+     throw new ApiError(403, "videoId is not valid");
    }
-   const comments = await Comment.find({
-      video:videoId
-   })
+   
+   const parseLimit = parseInt(limit,10);
+   const parsePage = parseInt(page,10);
+   const pageSkip = (parsePage - 1) * parseLimit;
 
+   const directionOfSort = { createdAt: -1 };
+   const options = {
+     page: parsePage,
+     limit: parseLimit,
+     customLabels: {
+       docs: "comments",
+       totalDocs: "totalComments"
+     }
+   };
+
+   const aggregate = Comment.aggregate([
+     {
+       $match: {
+         video: new mongoose.Types.ObjectId(videoId)
+       }
+     },
+     {
+       $lookup: {
+         from: "users",
+         localField: "owner",
+         foreignField: "_id",
+         as: "owner"
+       }
+     },
+     {
+       $unwind: {
+         path: "$owner",
+         preserveNullAndEmptyArrays: true
+       }
+     },
+     {
+       $sort: directionOfSort
+     },
+     {
+       $skip: pageSkip
+     },
+     {
+       $limit: parseLimit
+     },
+     {
+       $project: {
+         content: 1,
+         owner: {
+           _id: 1,
+           username: 1,
+           avatar: 1
+         },
+         createdAt: 1
+       }
+     }
+   ]);
+ 
+   const comments = await Comment.aggregatePaginate(aggregate, options);
+ 
    if (!comments) {
-      throw new ApiError(500,"Something wrong while fetching comments")
+     throw new ApiError(500, "Something went wrong while fetching comments");
    }
+ 
    return res
-      .status(200)
-      .json(new ApiResponse(200,comments,"Fetched allVideoComments successfully"))
-}) 
+     .status(200)
+     .json(new ApiResponse(200, comments, "Fetched allVideoComments successfully"));
+ });
+
+
+ 
 
 const getVideoCommentById = asyncHandler(async (req, res) => {
    const { commentId } = req.params
