@@ -6,17 +6,20 @@ import {jwtVerify} from '../middlewares/auth.middleware.js';
 import {
    createTweet,
    getUserTweets,
-   getTweets,
+   getAllTweets,
+   getTweetById,
    updateTweet,
    deleteTweet,
 } from '../controllers/tweet.controller.js';   
 
 router.use(jwtVerify);
 
-router.route('/').post(createTweet);
-router.route('/userTweets').get(getUserTweets);
-router.route('/tweets').get(getTweets);
-router.route('/c/:tweetId').patch(updateTweet).delete(deleteTweet);
+router.route('/createTweet').post(createTweet);
+router.route('/getUserTweets').get(getUserTweets);
+router.route('/getAllTweets').get(getAllTweets);
+router.route('/getTweetById/c/:tweetId').get(getTweetById);
+router.route('/updateTweet/c/:tweetId').patch(updateTweet);
+router.route('/deleteTweet/c/:tweetId').delete(deleteTweet);
 
 
 

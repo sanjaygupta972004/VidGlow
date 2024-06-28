@@ -39,17 +39,78 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 });
 
 
-const toggleCommentLike = asyncHandler(async(req,res)={
+const toggleCommentLike = asyncHandler(async(req,res)=>{
+ const {commentId} = req.params
+ const likedBy = req?.user._id 
+     if(!isValidObjectId(commentId)){
+          throw new ApiError(400,"invalid commentId")
+     }
 
+     const oldLike = await Like.findOne({
+          $and:[
+               {
+                    comment:commentId,
+                    likedBy:likedBy
+               }
+          ]
+     })
+
+     if(oldLike){
+          throw new ApiError(403,"You have already liked this comment")
+     }
+
+     const toggleLike = await Like.create({
+          comment:commentId,
+          likedBy:likedBy
+     })
+
+     if(!toggleLike){
+          throw new ApiError(500,"something went wrong while liking comment")
+     }
+
+     return res
+          .status(200)
+          .json(new ApiResponse(200,toggleLike,"comment liked successfully"))
 })
 
-const toggleTweetLike = asyncHandler(async(req,res)={
+const toggleTweetLike = asyncHandler(async(req,res)=>{
+ const {tweetId} = req.params
+ const likedBy = req?.user._id
+     if(!isValidObjectId(tweetId)){
+          throw new ApiError(400,"invalid tweetId")
+     }
 
+     const oldLike = await Like.findOne({
+          $and:[
+               {
+                    tweet:tweetId,
+                    likedBy:likedBy
+               }
+          ]
+     })
+
+     if(oldLike){
+          throw new ApiError(403,"You have already liked this tweet")
+     }
+
+     const toggleLike = await Like.create({
+          tweet:tweetId,
+          likedBy:likedBy
+     })
+
+     if(!toggleLike){
+          throw new ApiError(500,"something went wrong while liking tweet")
+     }
+
+     return res
+          .status(200)
+          .json(new ApiResponse(200,toggleLike,"tweet liked successfully"))
 })
 
 
 export {
-        toggleCommentLike,
-        toggleTweetLike,
-        toggleTweetLike
+        toggleVideoLike,
+            toggleCommentLike,
+               toggleTweetLike
+ 
 }
