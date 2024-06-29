@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Comment } from "../models/comment.model.js";
 import { isValidObjectId } from "mongoose";
 import { Video } from "../models/video.model.js";
+import { Like } from "../models/like.model.js";
 import mongoose from "mongoose";
 
 const crateVideoComment = asyncHandler(async(req,res)=> {
@@ -68,6 +69,22 @@ const updateVideoComment = asyncHandler(async(req,res)=> {
    }
 
    const exitingComment  = await Comment.findById(commentId)
+   if(!exitingComment){
+      throw new ApiError(404,"this comment is not available to updating")
+   }
+
+   const oldComment =  await Comment.findOne({
+      $and:[{
+         content:content,
+         owner:owner
+      }]
+   })
+
+   if(oldComment){
+      throw new ApiError(400,"you have already commented this content pls send another content to update it")
+   }
+
+
 
    if(!exitingComment){
       throw new ApiError(404,"this comment is not available to updating")
@@ -127,6 +144,7 @@ const deleteVideoComment = asyncHandler(async(req,res)=> {
 
 })
 
+
 const getAllVideoComments = asyncHandler(async (req, res) => {
    const { videoId } = req.params;
    const { page = 1, limit = 10 } = req.query;
@@ -163,12 +181,23 @@ const getAllVideoComments = asyncHandler(async (req, res) => {
          as: "owner"
        }
      },
-     {
-       $unwind: {
-         path: "$owner",
-         preserveNullAndEmptyArrays: true
-       }
-     },
+
+      {
+         $lookup:{
+            from:"likes",
+            localField:"_id",
+            foreignField:"comment",
+            as:"likes"
+         }
+      },
+      {
+          $addFields:{
+             totalLikes:{
+                $size:"$likes"
+             }
+          }
+      },
+      
      {
        $sort: directionOfSort
      },
@@ -186,6 +215,7 @@ const getAllVideoComments = asyncHandler(async (req, res) => {
            username: 1,
            avatar: 1
          },
+         totalLikes: 1,
          createdAt: 1
        }
      }
@@ -211,10 +241,14 @@ const getVideoCommentById = asyncHandler(async (req, res) => {
       throw new ApiError(403, "commentId is not valid")
    }
 
-   const comment = await Comment.findById(commentId)
+   const comment = await Comment.findById(commentId).populate("owner", "username avatar email")
+
+   const likes =  await Like.find({comment:commentId})
    if (!comment) {
-      throw new ApiError(500,"Something wrong while fetching comment")
+      throw new ApiError(404, "comment is not available to get it by id")  
    }
+
+   comment._doc.totalLikes = likes.length
 
     return res
       .status(200)
