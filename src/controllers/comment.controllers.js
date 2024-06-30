@@ -232,9 +232,6 @@ const getAllVideoComments = asyncHandler(async (req, res) => {
      .json(new ApiResponse(200, comments, "Fetched allVideoComments successfully"));
  });
 
-
- 
-
 const getVideoCommentById = asyncHandler(async (req, res) => {
    const { commentId } = req.params
    if (!isValidObjectId(commentId)) {
@@ -254,9 +251,6 @@ const getVideoCommentById = asyncHandler(async (req, res) => {
       .status(200)
       .json(new ApiResponse(200,comment,"Fetched videoComment successfully"))
 }) 
-
-
-
 
 
 export {

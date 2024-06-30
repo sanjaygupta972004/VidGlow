@@ -224,7 +224,6 @@ const logoutUser = asyncHandler(async(req,res)=>{
 });
 
 
-
 const reGenerateAccessToken = asyncHandler(async(req,res)=>{
 
   //step to refresh token
@@ -318,7 +317,6 @@ const changeCurrentUserPassword = asyncHandler(async(req,res)=>{
     new ApiResponse(200,undefined,"password changed successfully")
   )
 });
-
 
 
 
@@ -449,7 +447,6 @@ const updateAvatar = asyncHandler(async(req,res)=>{
   });
 
 
-
 const updateCoverImage = asyncHandler(async(req,res)=>{
   // step to update cover image
   // get cover image from  req.file
@@ -507,10 +504,9 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
 });
 
 
-
 const getUserChannelProfile = asyncHandler(async(req,res)=>{
 
-  const {username} = req.params;
+ const {username} = req.params;
   if(!username?.trim()){
     throw new ApiError(400,"username is missing")
   }
@@ -520,22 +516,21 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
         $match:{
           username:username.toLowerCase()
         }
-       
       },
       {
         $lookup:{
-          from : "subscriptions",
+          from: "subscriptions",
           localField:"_id",
-          foreignFiled: "channal",
+          foreignField: "channel",
           as:"subscribers"
         }
         },
         {
           $lookup:{
-            from : "subscriptions",
-            localField:"_id",
-            foreignFiled: "subscriber",
-            as:"subscribersTo"
+            from: "subscriptions",
+            localField: "_id",
+            foreignField: "subscriber",
+            as: "subscribedTo"
           }
           },
           {
@@ -543,8 +538,8 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
               subscribersCount:{
                 $size:"$subscribers"
               },
-                channelSubscribedCount:{
-                $size:"$subscribersTo"
+                subscribedToCount:{
+                $size:"$subscribedTo"
               },
               isSubscribed:{
                 $cond:{
@@ -560,7 +555,7 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
               fullName:1,
               username:1,
               subscribersCount:1,
-              channelSubscribedCount:1,
+              subscribedToCount:1,
               isSubscribed:1,
               avatar:1,
               coverImage:1,
@@ -630,7 +625,6 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
     }
   ]);
 
-  //console.log(user[0].watchHistory)
 
   return res
   .status(200)
