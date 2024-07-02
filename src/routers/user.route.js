@@ -47,8 +47,8 @@ router.route("/current-user").get(jwtVerify,getCurrentUser)
 router.route("/update-profile").patch(jwtVerify,updateUserProfile)
 router.route("/update-avatar").patch(jwtVerify, upload.single("avatar"), updateAvatar)
 router.route("/update-coverImage").patch(jwtVerify, upload.single("coverImage"),  updateCoverImage)
-router.route("/c/:username").get(jwtVerify, getUserChannelProfile) 
-router.route("/watchHistory").get(jwtVerify,getWatchHistory)
+router.route("/getUserChannelProfile/c/:username").get(jwtVerify, getUserChannelProfile) 
+router.route("/getWatchHistory").get(jwtVerify,getWatchHistory)
 
 export default router
 

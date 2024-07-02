@@ -511,7 +511,7 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
     throw new ApiError(400,"username is missing")
   }
 
- const channel =  User.aggregate([
+ const channel = await  User.aggregate([
       { 
         $match:{
           username:username.toLowerCase()
@@ -564,7 +564,6 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
           }         
   ])
 
-  console.log(channel)
 
   if(!channel?.length){
     throw new ApiError(404,"channel not found")
@@ -613,13 +612,6 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
               ]
             }
         },
-        {
-          $addFields:{
-            owner:{
-              first:"$owner"
-            }
-          }
-        }
       ]
       }
     }

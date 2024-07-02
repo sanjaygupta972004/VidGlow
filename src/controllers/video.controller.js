@@ -4,6 +4,7 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {ApiError} from "../utils/ApiError.js"
 import { upLoadOnCloudinary, deleteFromCloudinary,getPublicId,  thumbnailUrl } from "../utils/cloudinary.js"
 import { isValidObjectId } from "mongoose"
+import { User } from "../models/user.model.js"
 import mongoose from "mongoose"
 
 
@@ -201,7 +202,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 
-//  required  some changes in this controllers
+
 const getVideoById = asyncHandler(async (req, res) => {
    
    const {videoId} = req.params
@@ -209,6 +210,19 @@ const getVideoById = asyncHandler(async (req, res) => {
    if(!isValidObjectId(videoId)){
       throw new ApiError(400, "Invalid video id")
    }
+   
+   const checkVideoPresentWatchHistory = await User.findOne({
+      watchHistory: videoId
+   })
+
+   if(!checkVideoPresentWatchHistory){
+      await User.findByIdAndUpdate(req.user._id, {
+         $push: {
+            watchHistory: videoId
+         }
+      })
+   }
+
   const video = await Video.aggregate([
 
    {
@@ -223,7 +237,6 @@ const getVideoById = asyncHandler(async (req, res) => {
       }
    },
  
-
    {
      $lookup: {
        from: "comments",
@@ -243,7 +256,7 @@ const getVideoById = asyncHandler(async (req, res) => {
                    fullName: 1,
                    username: 1,
                    email: 1,
-                   profileImage: 1
+                   avatar: 1
                  }
                }
              ]
@@ -264,9 +277,33 @@ const getVideoById = asyncHandler(async (req, res) => {
        from: "likes",
        localField: "_id",
        foreignField: "video",
-       as: "likes"
-     }
+       as: "likes",
+     pipeline: [
+      {
+         $lookup: {
+            from: "users",
+            localField: "likedBy",
+            foreignField: "_id",
+            as: "likedBy",
+            pipeline : [
+               {
+               $project: {
+                  fullName: 1,
+                  avatar: 1
+               }
+               }
+            ]
+         }
+      },
+         {
+            $addFields: {
+                likedBy: { $arrayElemAt: ["$likedBy", 0] }
+            }
+          },
+     ]
+       } ,
    },
+ 
    {
      $addFields: {
        totalLikes: { $size: "$likes" },
@@ -286,7 +323,11 @@ const getVideoById = asyncHandler(async (req, res) => {
        totalLikes: 1,
        totalComments: 1,
        comments: 1,
-       likes: 1,
+      likes: {
+         likedBy: 1,
+         _id: 1
+      
+      }
      }
    }
  ]);
