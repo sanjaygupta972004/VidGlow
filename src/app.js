@@ -21,6 +21,7 @@ app.use(cookieParser());
 app.use(requestIp.mw())
 app.use(rateLimiter)
 // routers import 
+import healthCheckRouter from "./routers/healthCheck.router.js";
 import userRouter  from "./routers/user.route.js";
 import tweetRouter  from "./routers/tweet.router.js";
 import videoRouter from "./routers/video.router.js";
@@ -30,6 +31,7 @@ import likeRouter from "./routers/like.router.js"
 import subscriptionRouter from "./routers/subscription.router.js"
 
 // routes declaration
+app.use("/api/v1/healthCheck", healthCheckRouter)
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/videos", videoRouter)
