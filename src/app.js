@@ -11,10 +11,10 @@ app.use(cors({
         credentials:true,
 }));
 
-app.use(express.json({ limit:"30mb"}));
+app.use(express.json({ limit:"10kb"}));
 app.use(express.urlencoded({
         extended: true,
-        limit: "30mb"
+        limit: "10mb"
 }));
 app.use(express.static("public"))
 app.use(cookieParser());
@@ -29,6 +29,7 @@ import playlistRouter from "./routers/playlist.router.js";
 import commentRouter from "./routers/comment.router.js"
 import likeRouter from "./routers/like.router.js"
 import subscriptionRouter from "./routers/subscription.router.js"
+import dashboardRouter from "./routers/dashboard.router.js"
 
 // routes declaration
 app.use("/api/v1/healthCheck", healthCheckRouter)
@@ -39,6 +40,7 @@ app.use("/api/v1/playlists", playlistRouter)
 app.use("/api/v1/comments",commentRouter)
 app.use("/api/v1/likes",likeRouter)
 app.use("/api/v1/subscriptions",subscriptionRouter)
+app.use("/api/v1/dashboards",dashboardRouter)
 
 
 app.use(errorMiddleware)
