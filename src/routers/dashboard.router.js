@@ -6,7 +6,7 @@ import { getChannelVideos ,getChannelState} from "../controllers/dashboard.contr
 
 router.use(jwtVerify);
 
-router.route("/getChannelVideos/c/channelId").get(getChannelVideos);
-router.route("/getChannelState/c/channelId").get(getChannelState);
+router.route("/getChannelVideos/c/:channelId").get(getChannelVideos);
+router.route("/getChannelState/c/:channelId").get(getChannelState);
 
 export default router; 
