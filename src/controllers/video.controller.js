@@ -6,6 +6,7 @@ import { upLoadOnCloudinary, deleteFromCloudinary,getPublicId,  thumbnailUrl } f
 import { isValidObjectId } from "mongoose"
 import { User } from "../models/user.model.js"
 import mongoose from "mongoose"
+import { Like } from "../models/like.model.js"
 
 
 
@@ -113,6 +114,7 @@ return res
 
 })
 
+
 const getAllVideos = asyncHandler(async (req, res) => {
    const { page = 1, limit = 10,searchByWords } = req.query;
    const userId = req.user?._id;
@@ -125,76 +127,83 @@ const getAllVideos = asyncHandler(async (req, res) => {
    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
        throw new ApiError(400, "Invalid page or limit value provided in query params");
    }
-
-   const skip = (page - 1) * limit;
-
+   
+   const parseLimit = parseInt(limit, 10);
+   const parsePage = parseInt(page, 10);
    const sortParams = { createdAt: -1 };
+
    const options = {
-       page: page,
-       limit: limit,
+       page: parsePage,
+       limit: parseLimit,
        customLabels: {
            docs: 'videos',
            totalDocs: 'totalFetchVideo'
-       },
+       }, 
    }
 
-   const pipeline = [
-       {
-           $match: {
-               $and: [
-                   { owner: new mongoose.Types.ObjectId(userId) },
-                   {
-                       $or: [
-                           { title: { $regex: searchByWords, $options: "i" } },
-                           { description: { $regex: searchByWords, $options: "i" } }
-                       ]
-                   }
-               ]
-           }
-       },
-       {
-           $lookup: {
-               from: "likes",
-               localField: "_id",
-               foreignField: "video",
-               as: "likes"
-           }
-       },
-       {
-           $addFields: {
-               totalLikes: { $size: "$likes" }
-           }
-       },
-       {
-           $sort: sortParams
-       },
-       {
-           $skip: skip
-       },
-       {
-           $limit: limit
-       },
-       {
-           $project: {
-               title: 1,
-               description: 1,
-               videoFile: 1,
-               thumbnail: 1,
-               views: 1,
-               owner: 1,
-               totalLikes: 1,
-           }
-       }
-   ];
-
+   const aggregatePipeline = [
+      {
+         $match: {
+             $and: [
+                 { owner: new mongoose.Types.ObjectId(userId) },
+                 {
+                     $or: [
+                         { title: { $regex: searchByWords, $options: "i" } },
+                         { description: { $regex: searchByWords, $options: "i" } }
+                     ]
+                 }
+             ]
+         }
+     },
+     {
+         $lookup: {
+             from: "likes",
+             localField: "_id",
+             foreignField: "video",
+             as: "likes"
+     }
+     },
+     {
+         $sort: sortParams
+     },
+     {
+         $project: {
+             title: 1,
+             description: 1,
+             videoFile: 1,
+             thumbnail: 1,
+             views: 1,
+             owner: 1,
+             totalLikes: {
+                   $size: "$likes"
+             },
+         }
+     }
+   ]
    try {
-       let videos = await Video.aggregatePaginate(pipeline, options);
-   
-       if (!videos || videos.length === 0) {
+       let result = await Video.aggregatePaginate(aggregatePipeline, options);
+       console.log(result)
+       if (!result.videos|| result.videos.length === 0) {
            throw new ApiError(404, "Videos not found");
        }
+       
+   
+      const videoIds = result.videos.map(video => video._id);
+      const likesCount = await Like.aggregate([
+      { $match: { video: { $in: videoIds } } },
+      { $group: { _id: "$video", count: { $sum: 1 } } }
+      ])
+ 
+      const likesCountMap = new Map(likesCount.map(item => [item._id.toString(), item.count]));
 
-       return res.status(200).json(new ApiResponse(200, videos, "Videos found successfully"));
+       result.videos = result.videos.map(video => ({
+        ...video,
+        totalLikes: likesCountMap.get(video._id.toString()) || 0
+      }));
+ 
+     
+
+       return res.status(200).json(new ApiResponse(200, result, "Videos found successfully"));
    } catch (error) {
        console.error("Error occurred:", error);
        throw new ApiError(500, "Internal server error");
@@ -224,7 +233,6 @@ const getVideoById = asyncHandler(async (req, res) => {
    }
 
   const video = await Video.aggregate([
-
    {
      $match: {
        _id: new mongoose.Types.ObjectId(videoId)

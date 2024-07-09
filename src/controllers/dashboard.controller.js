@@ -7,6 +7,7 @@ import {Comment} from "../models/comment.model.js";
 import { isValidObjectId } from "mongoose";
 import { Subscription } from "../models/subscription.model.js";
 import { Like } from "../models/like.model.js";
+import mongoose from "mongoose";
 
 
 
@@ -23,74 +24,93 @@ const getChannelVideos = asyncHandler(async (req,res,) => {
         const options = {
             page: parseInt(req.query.page) || 1,
             limit: parseInt(req.query.limit) || 10,
-            sort: {createdAt: "desc"}
+            sort: {createdAt: -1}
         }
 
         const pipeline = [
                 {
-                        $match: {owner: channelId}
-                        },
-                        {
-                        $lookup: {
-                                from: "users",
-                                localField: "owner",
-                                foreignField: "_id",
-                                as: "channel"
-                        }
-                        },
-                        {
-                        $unwind: "$channel"
-                        },
-                        {
-                        $lookup: {
-                                from: "comments",
-                                localField: "_id",
-                                foreignField: "video",
-                                as: "comments"
-                        }
-                        },
-                        {
-                        $lookup: {
-                                from: "likes",
-                                localField: "_id",
-                                foreignField: "video",
-                                as: "likes"
-                        }
-                        },
-                        {
-                        $addFields: {
-                                commentCount: {$size: "$comments"},
-                                likeCount: {$size: "$likes"}
-                        }
-                        },
-                        {
-                        $project: {
-                                comments: {
-                                        content:1,
-                                        owner:1,
-                                },
-                                likes: 0,
-                                commentCount:1,
-                                likeCount:1,
-                                channel: {
-                                        email:1,
-                                        username: 1,
-                                        fullName: 1,
-                                        avatar: 1
-                                },
-                        }
+                  $match: {
+                    owner: new mongoose.Types.ObjectId(channelId)
+                  }
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "channel"
+                  }
+                },
+                {
+                  $unwind: "$channel"
+                },
+                {
+                  $sort: options.sort
+                },
+                {
+                  $skip: (options.page - 1) * options.limit
+                },
+                {
+                  $limit: options.limit
+                },
+                {
+                  $lookup: {
+                    from: "comments",
+                    localField: "_id",
+                    foreignField: "video",
+                    as: "comments"
+                  }
+                },
+                {
+                  $lookup: {
+                    from: "likes",
+                    localField: "_id",
+                    foreignField: "video",
+                    as: "likes"
+                  }
+                },
+                {
+                  $addFields: {
+                    totalComment: {
+                      $size: "$comments"
+                    },
+                    totalLike: {
+                      $size: "$likes"
+                    }
+                  }
+                },
+                {
+                  $project: {
+                        title: 1,
+                        description: 1,
+                        thumbnail: 1,
+                        videoUrl: 1,
+                        isPublished: 1,
+                        createdAt: 1,
+                    comments: {
+                      content: 1,
+                      owner: 1,
+                    },
+                    totalComment: 1,
+                    totalLike: 1,
+                    channel: {
+                      _id: 1,
+                      username: 1,
+                      email: 1,
+                      avatar: 1,
+                    },
+                  }
                 }
-        ] 
-
-        const videos = await Video.aggregatePaginate(pipeline,options)
-
-       if(videos.data.length === 0){
-               throw new ApiError(404,"No video found for this channel")
-       }
-
-       return res
-        .status(200)
-        .json(new ApiResponse(200,videos, "AllVideos retrieved successfully for this channel"))
+              ]
+   const videoAggregate = await Video.aggregate(pipeline)
+    if(!videoAggregate){
+            throw new ApiError(404,"No videos found for this channel")
+    }
+        
+    return res
+    .status(200)
+    .json(new ApiResponse(200,videoAggregate, "Videos retrieved successfully"))
+      
 })
 
 
@@ -105,21 +125,21 @@ const getChannelState = asyncHandler(async (req,res) => {
         }
 
         const subscribers = await Subscription.countDocuments({channel: channelId})
-        const videos = await Video.countDocuments({owner: channelId})
+        const videos = await Video.find({owner: channelId})
         const likes = await Like.countDocuments({
                 video: {$in: await Video.find({owner: channelId}).select("_id")}
         
         })
 
-        const comments = await Comment.countDocuments({
+        const comments = await Comment.find({
                 video: {$in: await Video.find({owner: channelId}).select("_id")}
         })
 
         const data = {
-                subscribers,
-                videos,
-                likes,
-                comments
+              totalLikesFromThisChannel: likes,
+              totalCommentsFromThisChannel: comments,
+              totalSubscribers: subscribers,
+              totalVideos: videos
         }
 
         return res
