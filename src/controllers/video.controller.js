@@ -28,12 +28,10 @@ const publishVideo = asyncHandler(async (req, res) => {
    })
 
    if(oldVideo){
-      throw new ApiError(400, "video already exists")
+      throw new ApiError(400, "video with same title or description already exist")
    }
 
    const localVideoUrl = req.file?.path 
-
-  // console.log(localVideoUrl)  
 
    if(!localVideoUrl) {
       throw new ApiError(400, "video file is required")
@@ -45,8 +43,6 @@ const publishVideo = asyncHandler(async (req, res) => {
    if(!videoUrl){
       throw new ApiError(500, "something went wrong while uploading video")
    }
-
-   //const thumbnailUrl =  videoUrl.url.replace("mp4", "png")
 
    const  clodinaryThumbnailUrl  =  await thumbnailUrl(videoUrl.url)
 
@@ -61,8 +57,6 @@ const publishVideo = asyncHandler(async (req, res) => {
       throw new ApiError(400, "user is not valid to create video")
    
    }
-
-
    const video = await Video.create({
       title,
       description,
@@ -97,6 +91,12 @@ if(!(isValidObjectId(userId))){
 }
 
 const video = await Video.findById(videoId)
+ if(!video){
+   throw new ApiError(404, "video does not exist")
+ }
+if(video.isPublished ===true){
+   throw new ApiError(400, "video is already published")
+}
 
 if(video.owner.toString() !== userId.toString()){
    throw new ApiError(401, "you are not authorized to publish this video")
@@ -380,7 +380,7 @@ const getUserVideos = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Invalid user id")
    }
 
-   const videos = await Video.aggregatePaginate({owner:userId})
+   const videos = await Video.aggregatePaginate({owner:userId}, {page:1, limit:10, customLabels: {docs: "videos", totalDocs: "totalVideos"}})
 
    if(videos.length === 0){
       throw new ApiError(404, "videos not found")
@@ -404,7 +404,7 @@ const updateTitleOrDescriptionVideo = asyncHandler(async (req, res) => {
    if(isValidObjectId(videoId) === false){
       throw new ApiError(400, "videoId is invalid")
    }
-
+   
    if(!(title && description)){
       throw new ApiError(400, "title and description is required")
    }
@@ -445,6 +445,11 @@ const updateThumbnailVideo = asyncHandler(async (req, res) => {
    if(!isValidObjectId(videoId)){
       throw new ApiError(400, "Invalid videoId")
   }
+
+   const oldVideo = await Video.findById(videoId)
+   if(!oldVideo){
+      throw new ApiError(404, "video does not exist")
+   }
 
    if(!isValidObjectId(userId)){
       throw new ApiError(400, "Invalid userId")
