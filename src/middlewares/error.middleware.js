@@ -1,6 +1,7 @@
 import {ApiError} from "../utils/ApiError.js"
 import { removeUnusedMulterFilesOnError } from "../utils/helper.js"
 import mongoose from "mongoose"
+import  logger  from "../utils/logger.js"
 
 
 export const errorMiddleware = (err, req, res, next) => {
@@ -11,6 +12,9 @@ export const errorMiddleware = (err, req, res, next) => {
       error = new ApiError(statusCode,message, error?.errors||[], error?.stack)
    }
 
+   logger.error(`${error.statusCode} - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`)
+   
+    
   removeUnusedMulterFilesOnError(req)
 
    const response = {

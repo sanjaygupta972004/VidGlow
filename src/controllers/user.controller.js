@@ -66,7 +66,7 @@ const registerUser =  asyncHandler(async(req,res)=>{
         })
 
         if(existedUser){
-                throw new ApiError(409,"User already exists")
+                throw new ApiError(400,"User already exists")
         }
 
         const avatarLocalPath = req.files?.avatar[0]?.path;
@@ -81,7 +81,7 @@ const registerUser =  asyncHandler(async(req,res)=>{
         
 
         if(!avatarLocalPath){
-         throw new ApiError(409,"Avatar is required")
+         throw new ApiError(400,"Avatar is required")
         }
 
       const avatar = await upLoadOnCloudinary(avatarLocalPath)
@@ -91,7 +91,7 @@ const registerUser =  asyncHandler(async(req,res)=>{
       //console.log(coverImage.url)
 
       if(!avatar){
-        throw new ApiError(409,"avatar is required")
+        throw new ApiError(400,"avatar is required")
       }
 
       const user =  await User.create({
