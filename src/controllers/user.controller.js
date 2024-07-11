@@ -6,7 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 
 
 const generateAccessTokenAndRefreshToken = async(userId)=>{
@@ -327,21 +327,48 @@ const getCurrentUser = asyncHandler(async(req,res)=>{
   // get user from db
   // return res
 
-  // const user = await User.findById(req.user._id)
+  const user = await User.aggregate([
+    {
+      $match:{
+        _id: new mongoose.Types.ObjectId(req.user?._id)
+      }
+    },
+    {
+      $lookup:{
+        from:"videos",
+        localField:"watchHistory",
+        foreignField:"_id",
+        as:"watchHistory",
+      }
+    },
+    {
+      $project:{
+        fullName:1,
+        username:1,
+        email:1,
+        avatar:1,
+        coverImage:1,
+        watchHistory:{
+          videoUrl:1,
+          title:1,
+          description:1,
+          thumbnail:1,
+          createdAt:1,
+          views:1,
+        },
+        watchHistoryCount:{
+          $size:"$watchHistory"
+        }
+      }
+    }
+  ])
 
-  // if(!user){
-  //   throw new ApiError(404,"user not found")
-  // }
-
-  // return res.status(200).json(
-  //   new ApiResponse(200,user,"user details fetched successfully")
-  // )
-
-
-  // another way to get current user
+  if(!user){
+    throw new ApiError(404,"user not found")
+  }
 
   return res.status(200).json(
-    new ApiResponse(200,req.user,"user details fetched successfully")
+    new ApiResponse(200,user[0],"user details fetched successfully")
   )
 
 
@@ -359,7 +386,7 @@ const updateUserProfile = asyncHandler(async(req,res)=>{
   const {fullName, email} = req.body;
 
   if(!fullName || !email){
-    throw new ApiError(400,"Both Filds Email and FullName are Required")
+    throw new ApiError(400,"Both fields Email and FullName are Required")
   }
    
   const updatedUser = await User.findByIdAndUpdate(
@@ -624,6 +651,34 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
 })
 
 
+const deleteUserAccount = asyncHandler(async(req,res)=>{
+  const {userId} = req.params;
+  if(!isValidObjectId(userId)){
+    throw new ApiError(400,"Invalid user id")
+  }
+   
+  const user = await User.findById(req.user._id);
+  if(!user){
+    throw new ApiError(404,"user is not available in db") 
+  }
+   
+  if(userId.toString() !== req.user._id.toString()){
+    throw new ApiError(403,"unauthorized request")
+  }
+  
+   const deletedUser = await User.findByIdAndDelete(req.user._id);
+   
+    if(!deletedUser){
+      throw new ApiError(503,"something went wrong while deleting user")
+    }else
+    {
+      return res
+      .status(200)
+      .json(new ApiResponse(200,{},"user deleted successfully"))
+    }
+})
+
+
 export {
     registerUser,
     loginUser,
@@ -636,4 +691,5 @@ export {
     updateCoverImage,
     getUserChannelProfile,
     getWatchHistory,  
+    deleteUserAccount, 
    }
