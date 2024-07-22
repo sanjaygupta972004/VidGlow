@@ -7,6 +7,8 @@ RUN npm install
 
 COPY . .
 
+CMD ["npm", "start"]
+
 ENV MONGODB_URL=mongodb+srv://sanjaygupta07054:CHAIAURCODE2026@cluster4.ehhjzcn.mongodb.net
 ENV CORS_ORIGIN=*
 ENV NODE_ENV=development
@@ -21,4 +23,4 @@ ENV CLOUDINARY_API_SECRET=replace_with_strong_secret
 
 EXPOSE 5000
 
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"] 
