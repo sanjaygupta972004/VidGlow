@@ -3,5 +3,6 @@
                 "clodinary",
                 "Cloudinary",
                 "Sanjay"
-        ]
+        ],
+        "git.ignoreLimitWarning": true
 }
