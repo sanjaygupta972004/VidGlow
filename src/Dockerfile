@@ -2,11 +2,12 @@ FROM node:lts-alpine
 
 WORKDIR /src
 
-COPY COPY package.json package-lock.json ./
-
+COPY package.json package-lock.json ./
 RUN npm install
 
 COPY . .
+
+CMD ["npm", "start"]
 
 ENV MONGODB_URL=mongodb+srv://sanjaygupta07054:CHAIAURCODE2026@cluster4.ehhjzcn.mongodb.net
 ENV CORS_ORIGIN=*
