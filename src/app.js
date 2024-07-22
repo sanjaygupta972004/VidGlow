@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import requestIp from "request-ip"
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import { rateLimiter } from './middlewares/rateLimiter.middlewares.js';
+
+
 const app = express();
 
 app.use(cors({
@@ -16,7 +18,8 @@ app.use(express.urlencoded({
         extended: true,
         limit: "10mb"
 }));
-app.use(express.static("public"))
+app.use('/docs', express.static("public"));
+
 app.use(cookieParser());
 app.use(requestIp.mw())
 app.use(rateLimiter)

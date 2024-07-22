@@ -107,16 +107,10 @@ const toggleTweetLike = asyncHandler(async(req,res)=>{
           .json(new ApiResponse(200,toggleLike,"tweet liked successfully"))
 })
 
-const sum = (a,b) =>{
-     return a+b
-
-}
-
 
 export {
         toggleVideoLike,
             toggleCommentLike,
                toggleTweetLike,
-               sum
- 
+          
 }

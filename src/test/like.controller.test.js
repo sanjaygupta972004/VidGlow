@@ -1,8 +1,3 @@
-import {sum} from "../controllers/like.controller.js"
-
-test("sum of 2 numbers",()=>{
-     expect(sum(1,2)).toBe(3)
-})
 
 test("to check equality",()=>{
      const data = {
