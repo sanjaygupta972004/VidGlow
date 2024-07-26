@@ -54,7 +54,7 @@ VidGlow is a comprehensive video sharing platform that allows users to upload, m
 
 ## API Documentation
 
-* For detailed API endpoints and usage, please refer to the Postman Documentation .
+* For detailed API endpoints and usage, please refer to the Postman Documentation [https://documenter.getpostman.com/view/29001593/2sA3kVizvk]
 
 # Setup Instructions
 
