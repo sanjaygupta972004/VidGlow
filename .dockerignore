@@ -1,0 +1,37 @@
+# Ignore node_modules directory (it will be installed inside the container)
+node_modules
+
+# Ignore logs
+logs
+*.log
+
+# Ignore environment variable files
+.env
+.env.*  # Includes .env.production, .env.development, etc.
+
+# Ignore local development files
+*.local
+*.test
+
+# Ignore Docker-related files
+Dockerfile
+docker-compose.yml
+
+# Ignore test-related files
+coverage/
+__tests__/
+*.spec.js
+
+# Ignore git files
+.git
+.gitignore
+
+# Ignore editor and IDE settings
+*.swp
+*.swo
+*.idea/
+.vscode/
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db

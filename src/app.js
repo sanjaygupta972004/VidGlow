@@ -35,7 +35,7 @@ import subscriptionRouter from "./routers/subscription.router.js"
 import dashboardRouter from "./routers/dashboard.router.js"
 
 // routes declaration
-app.use("/api/v1/healthCheck", healthCheckRouter)
+app.use("/", healthCheckRouter)
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/videos", videoRouter)

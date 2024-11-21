@@ -9,11 +9,14 @@ dotenv.config({
 })
 
 
+let appName = process.env.APP_NAME
+
+
 connectionDb()
 .then(()=>{
         
         app.listen(process.env.PORT||8000,()=>{
-                console.log(` Server listening on port !!: ${process.env.PORT}`)
+                console.log(` Server ${appName} listening on port !!: ${process.env.PORT}`)
         });
 })
 .catch((err)=>{
