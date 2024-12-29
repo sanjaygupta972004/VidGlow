@@ -18,7 +18,7 @@ app.use(express.urlencoded({
         extended: true,
         limit: "10mb"
 }));
-app.use('/docs', express.static("public"));
+app.use('/', express.static("public"));
 
 app.use(cookieParser());
 app.use(requestIp.mw())
@@ -35,7 +35,7 @@ import subscriptionRouter from "./routers/subscription.router.js"
 import dashboardRouter from "./routers/dashboard.router.js"
 
 // routes declaration
-app.use("/", healthCheckRouter)
+app.use("/healthCheck", healthCheckRouter)
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/videos", videoRouter)
