@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from "cookie-parser";
 import requestIp from "request-ip"
+import path from "path"
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import { rateLimiter } from './middlewares/rateLimiter.middlewares.js';
 
@@ -18,7 +19,8 @@ app.use(express.urlencoded({
         extended: true,
         limit: "10mb"
 }));
-app.use('/docs', express.static("public"));
+
+app.use('/doc', express.static(path.resolve('public')));
 
 app.use(cookieParser());
 app.use(requestIp.mw())
@@ -35,7 +37,7 @@ import subscriptionRouter from "./routers/subscription.router.js"
 import dashboardRouter from "./routers/dashboard.router.js"
 
 // routes declaration
-app.use("/healthCheck", healthCheckRouter)
+app.use("/", healthCheckRouter)
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/videos", videoRouter)
@@ -49,3 +51,9 @@ app.use("/api/v1/dashboards",dashboardRouter)
 app.use(errorMiddleware)
 
 export {app}
+
+
+
+
+
+
