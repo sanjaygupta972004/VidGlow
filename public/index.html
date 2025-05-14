@@ -4,149 +4,208 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VidGlow API</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(to bottom right, #007bff, #00d2ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 16px;
             height: 100vh;
+            font-family: 'Inter', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
-        .card {
-            width: 500px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-            padding: 30px;
+        .container {
+            background: rgba(255,255,255,0.97);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(44,83,100,0.18);
+            padding: 24px;
+            max-width: 1000px;
+            width: 95%;
+            height: 90vh;
+            display: grid;
+            grid-template-rows: auto auto 1fr auto;
+            gap: 16px;
+        }
+
+        .header {
             text-align: center;
+            padding-bottom: 16px;
         }
 
-        .card img {
-            border-radius: 10px;
-            width: 90px;
-            height: 90px;
-            margin-bottom: 20px;
+        .icon-bg {
+            background: linear-gradient(135deg, #007bff 0%, #00d2ff 100%);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
         }
 
-        .card h1 {
-            font-size: 28px;
-            color: #007bff;
-            margin-bottom: 10px;
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            overflow: hidden;
         }
 
-        .card .tagline {
-            font-size: 16px;
-            color: #555;
-            margin-bottom: 20px;
-            font-style: italic;
+        .features, .deployment-section {
+            background: rgba(0,123,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            height: 100%;
         }
 
-        .card p {
-            font-size: 18px;
-            color: #333;
-            line-height: 1.6;
-            margin-bottom: 30px;
+        .features ul, .deployment-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .features li, .deployment-section li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .features li:hover, .deployment-section li:hover {
+            transform: translateX(5px);
+            background: rgba(255,255,255,0.8);
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0 8px;  /* Reduced bottom padding */
+            margin-top: auto;     /* Push footer to bottom */
         }
 
         .btn {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            padding: 12px 25px;
-            font-size: 16px;
-            border: none;
+            background: linear-gradient(90deg, #007bff 0%, #00d2ff 100%);
+            color: #fff;
+            padding: 10px 24px;
             border-radius: 8px;
-            cursor: pointer;
             text-decoration: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s, box-shadow 0.3s;
+            font-weight: 600;
         }
 
-        .btn:hover {
-            background-color: #0056b3;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        h1 {
+            font-size: 1.8rem;
+            margin: 0 0 4px;
         }
 
-        .features {
-            text-align: left;
-            margin: 30px 0;
-        }
-
-        .features h3 {
-            font-size: 20px;
+        .tagline {
             color: #007bff;
-            margin-bottom: 10px;
-        }
-
-        .features ul {
-            list-style-type: disc;
-            padding-left: 20px;
-        }
-
-        .features ul li {
-            font-size: 16px;
-            color: #555;
-            margin-bottom: 5px;
-        }
-
-        .social-links {
-            margin-top: 20px;
+            font-size: 1rem;
+            margin-bottom: 8px;
         }
 
         .social-links a {
-            font-size: 16px;
             color: #007bff;
-            margin: 0 10px;
             text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(0,123,255,0.05);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .social-links a:hover {
-            text-decoration: underline;
+            background: rgba(0,123,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .social-links a::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23007bff' d='M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z'/%3E%3C/svg%3E") no-repeat center center;
         }
 
         .made-by {
-            margin-top: 30px;
-            font-size: 14px;
-            color: #555;
+            color: #666;
+            font-size: 0.9rem;
         }
 
         .made-by span {
-            font-weight: bold;
-            color: #007bff;
+            color: #ff4b4b;
+            display: inline-block;
+            animation: heartbeat 1.5s ease infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                overflow-y: auto;
+            }
+            
+            .container {
+                height: 95vh;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <img src="logo-white.png" alt="VidGlow Logo">
-        <h1>VidGlow API</h1>
-        <div class="tagline">Empowering seamless video management.</div>
-        <p>VidGlow is a powerful API for video sharing platforms. It enables users to upload, manage, and interact with video content. </p>
-        
-        <div class="features">
-            <h3>Key Features:</h3>
-            <ul>
-                <li>User management with authentication and authorization.</li>
-                <li>Video and images upload and metadata handling.</li>
-                <li>Comments and likes system integration.</li>
-                <li>Customizable playlists for users.</li>
-                <li>User dashboard for managing users account and their content.</li>
-            </ul>
+    <div class="container">
+        <div class="header">
+            <div class="icon-bg">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 28 28" width="32" height="32">
+                    <rect width="20" height="14" x="3" y="7" fill="#fff" stroke="#007bff" stroke-width="2" rx="4"/>
+                    <path d="M23 10l4 3v2l-4 3V10z" fill="#00d2ff" stroke="#007bff" stroke-width="1.5"/>
+                </svg>
+            </div>
+            <h1>VidGlow API</h1>
+            <div class="tagline">Empowering seamless video management</div>
         </div>
-        
-        <a href="https://www.postman.com/your-postman-docs-url" target="_blank" class="btn">View Postman Docs</a>
-        
-        <div class="social-links">
-            <a href="https://twitter.com/@Dev_Sanjay2004" target="_blank">Twitter</a>
-            <a href="https://github.com/sanjaygupta972004" target="_blank">GitHub</a>
+        <div class="main-content">
+            <div class="features">
+                <h3>Key Features</h3>
+                <ul>
+                    <li>Secure user authentication & authorization</li>
+                    <li>Video & image uploads with metadata</li>
+                    <li>Comments, likes, and playlist support</li>
+                    <li>User dashboard for content management</li>
+                    <li>Cloud storage integration</li>
+                </ul>
+            </div>
+            <div class="deployment-section">
+                <h3>🚀 Deployment Process</h3>
+                <ul>
+                    <li><strong>Version Control:</strong> Push your changes to the <code>main</code> branch on GitHub</li>
+                    <li><strong>CI/CD Pipeline:</strong> GitHub Actions automatically triggers the deployment workflow</li>
+                    <li><strong>Container Setup:</strong> Docker Compose builds and orchestrates the application containers</li>
+                    <li><strong>Cloud Deployment:</strong> Application is deployed to AWS EC2 instance</li>
+                    <li><strong>Monitoring:</strong> Automated health checks ensure service availability</li>
+                </ul>
+            </div>
         </div>
-
-        <div class="made-by">
-            Made with ❤️ by <span>Sanjay Gupta</span>
+        <div class="footer">
+            <div class="social-links">
+                <a href="https://github.com/sanjaygupta972004" target="_blank">GitHub</a>
+            </div>
+            <a href="/docs" class="btn">View API Docs</a>
+            <div class="made-by">
+                Made with <span>❤️</span> 
+            </div>
         </div>
     </div>
 </body>

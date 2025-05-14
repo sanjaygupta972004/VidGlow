@@ -1,38 +1,14 @@
-
-# VidGlow
+# 👾VidGlow
 
 VidGlow is a comprehensive video sharing platform that allows users to upload, manage, and interact with video content. This README provides an overview of the project, its features, and instructions for setting up and running the application.
 
+## ⭐ Key Features
 
-# Features
-
-## User Management
-
-* User Registration: Users can register with a unique username and email 
-* User Authentication: JWT Based Secure login and logout functionality .
-* Profile Management: Users  can upload avatars and cover images, which are stored on Cloudinary.
-
-## Video Management 
-
-* Upload Videos: Users can upload videos with titles, descriptions, and thumbnails 
-*  View Videos: Videos can be viewed along with their details such as views, likes, and comments.
-* Like Videos: Users can like videos, with checks to prevent multiple likes from the same user.
-
-## Playlists Management
-
-* Create Playlists: Users can create playlists with names and descriptions.
-* Add Videos to Playlists: Users can add videos to their playlists.
-* View Playlists: Users can view their playlists and the videos within them.
-
-## comments Management
-
-* Add Comments: Users can comment on videos.Edit Comments: Users can edit their comments.
-* Delete Comments: Users can delete their comments.
-* View Comments: Users can view all comments on a video, sorted by creation date.
-
-## Like Management
-
-* Like Comments: Users can like comments, with checks to prevent multiple likes from the same user.
+- Secure user authentication & authorization
+- Video & image uploads with metadata
+- Comments, likes, and playlist support
+- User dashboard for content management
+- Cloud storage integration
 
 ## Rate Limiting
 
@@ -90,25 +66,22 @@ VidGlow is a comprehensive video sharing platform that allows users to upload, m
 * CLOUDINARY_API_SECRET = api-secret
 
 ## Run the application:
-
 * npm start
+
+## 🚀 Deployment Process
+
+- **Version Control:** Push your changes to the `main` branch on GitHub
+- **CI/CD Pipeline:** GitHub Actions automatically triggers the deployment workflow
+- **Container Setup:** Docker Compose builds and orchestrates the application containers
+- **Cloud Deployment:** Application is deployed to AWS EC2 instance
+- **Monitoring:** Automated health checks ensure service availability
 
 # License
 
 * This project is licensed under the MIT License.
 
-
 ### Upcoming Features
 
 * Notifications: Implement a notification system to alert users about likes, comments, and new videos from subscribed channels
 * Analytics Dashboard: Provide content creators with an analytics dashboard to track the performance of their videos.
-
-
-
-
-
-
-
-
-
 

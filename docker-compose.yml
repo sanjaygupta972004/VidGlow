@@ -1,25 +1,29 @@
-version: '3'
+version: '3.8'
 
 services:
-  app1:
-    build: .
-    environment:
-      - APP_NAME=App1
+  web:
+    image: nginx:alpine
     ports:
-      - "3001:3000"
-  app2:
-    build: .
-    environment:
-      - APP_NAME=App2
-    ports:
-      - "3002:3000"
+      - "8080:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
 
-  app3:
-    build: .
-    environment:
-      - APP_NAME=App3
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "3003:3000"  
+      - "3000:3000"
+    environment:
+      - MONGODB_URL=${MONGODB_URL}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT}
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - ACCESS_TOKEN_EXPIRY=${ACCESS_TOKEN_EXPIRY}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - REFRESH_TOKEN_EXPIRY=${REFRESH_TOKEN_EXPIRY}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
 
-      
-      
